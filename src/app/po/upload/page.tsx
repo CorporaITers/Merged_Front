@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import '@/app/po/upload/poupload.css';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
+const API_URL = process.env.NEXT_PUBLIC_API_ENDPOINT || '';
 
 const POUploadPage = () => {
   const router = useRouter();
