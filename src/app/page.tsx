@@ -27,8 +27,8 @@ const DEPARTURE_DESTINATION_MAP: Record<string, string[]> = {
 export default function Home() {
   const [departure, setDeparture] = useState("");
   const [destination, setDestination] = useState("");
-  const [eta, setEta] = useState("");
   const [etd, setEtd] = useState("");
+  const [eta, setEta] = useState("");
   const [availableDestinations, setAvailableDestinations] = useState<string[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [results, setResults] = useState<ScheduleResult[]>([]);
@@ -83,9 +83,9 @@ export default function Home() {
     setShowRawMap({});
     setIsLoading(true); // ← 追加
 
-    if (!eta && !etd) {
+    if (!etd && !eta) {
       setIsLoading(false); // ← エラーでも必ずfalseに
-      setError("ETAまたはETDのいずれかを入力してください。");
+      setError("ETDまたはETAのいずれかを入力してください。");
       return;
     }
 
@@ -96,8 +96,8 @@ export default function Home() {
         body: JSON.stringify({
           departure_port: departure,
           destination_port: destination,
-          eta_date: eta || null,
-          etd_date: etd || null
+          etd_date: etd || null,
+          eta_date: eta || null
         })
       });
       const data = await res.json();
@@ -170,18 +170,28 @@ export default function Home() {
   return (
     <>
     {/* ヘッダー */}
-    <header className="bg-[#2f52db] text-white flex items-center px-8 h-[60px] shadow-md">
-      <div className="text-lg font-bold mr-20">DigiTradeX</div>
+    <header className="bg-[#2f52db] text-white flex items-center px-4 h-[60px] shadow-md">
+      <div className="text-[22px] font-bold mr-32">DigiTradeX</div>
         <nav className="flex">
-          <button className="px-6 h-[60px] text-sm hover:bg-white/10 transition">PO読取</button>
-          <button className="px-6 h-[60px] text-sm hover:bg-white/10 transition">一覧</button>
-          <button className="px-6 h-[60px] text-sm bg-[#dce8ff] text-[rgba(0,0,0,0.5)] font-semibold">船ブッキング</button>
+         <a
+          href="https://tech0-gen-8-step4-dtx-pofront-b8dygjdpcgcbg8cd.canadacentral-01.azurewebsites.net/"
+          className="px-6 h-[60px] text-[18px] hover:bg-white/10 transition flex items-center"
+          >
+            PO読取
+        </a>
+        <a
+          href="https://tech0-gen-8-step4-dtx-pofront-b8dygjdpcgcbg8cd.canadacentral-01.azurewebsites.net/po/list"
+          className="px-6 h-[60px] text-[18px] hover:bg-white/10 transition flex items-center"
+        >
+            一覧
+        </a>
+          <button className="px-6 h-[60px] text-[18px] bg-[#dce8ff] text-[rgba(0,0,0,0.8)] font-medium">船ブッキング</button>
           <a
-    href="https://tech0-gen-8-step4-dtx-sbfront-a2dde6enhbghc8bx.canadacentral-01.azurewebsites.net/forecast"
-    className="px-6 h-[60px] text-sm hover:bg-white/10 transition flex items-center"
-  >
-    バンニング見込み
-  </a>
+            href="https://tech0-gen-8-step4-dtx-sbfront-a2dde6enhbghc8bx.canadacentral-01.azurewebsites.net/forecast"
+            className="px-6 h-[60px] text-[18px] hover:bg-white/10 transition flex items-center"
+          >
+            バンニング見込み
+          </a>
         </nav>
     </header>
 
@@ -255,7 +265,7 @@ export default function Home() {
       </div>
 
      {/* 結果表示 */}
-<div className="w-full lg:w-2/3 p-6 bg-white rounded-xl shadow-md p-4 mb-8">
+<div className="w-full lg:w-2/3 px-6 bg-white rounded-xl shadow-md py-4 mb-8">
   <h2 className="text-base font-semibold text-gray-800 bg-blue-100 px-4 py-2 rounded-xl">レコメンド</h2>
 
   <div className="mt-4 space-y-4">
