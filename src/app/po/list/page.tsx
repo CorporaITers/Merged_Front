@@ -15,6 +15,8 @@ interface Product {
   subtotal: number;
 }
 
+// POインターフェースに詳細表示に必要なフィールドを追加
+
 interface PO {
   id: number;
   poNumber: string;
@@ -23,7 +25,7 @@ interface PO {
   status: string;
   memo?: string;
   products?: Product[];
-  productDetail?: Product; // ← 追加
+  productDetail?: Product;
   productName?: string;
   quantity?: number;
   unitPrice?: number;
@@ -40,6 +42,12 @@ interface PO {
   vesselName?: string;
   voyageNumber?: string;
   currency?: string;
+  // 追加のフィールド
+  acquisitionDate?: string;
+  invoice?: string;
+  payment?: string;
+  booking?: string;
+  containerInfo?: string;
 }
 
 interface APIResponse {
@@ -787,6 +795,9 @@ const MemoComponent = ({
   };
   
   return (
+    
+
+    
     <div>
       <div className="bg-blue-100 p-2 mb-4">
         <h2 className="font-medium">一覧</h2>
@@ -923,6 +934,8 @@ const MemoComponent = ({
       </div>
   
       {/* ローディング・空データ・テーブル本体 */}
+// 展開行の詳細情報を表示するコードを追加
+
       {isLoading ? (
         <div className="text-center py-10">
           <div className="w-12 h-12 border-t-4 border-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
@@ -934,7 +947,6 @@ const MemoComponent = ({
         </div>
       ) : (
         <div>
-          {/* ✅⬇️ ここに挿入します */}
           <div className="overflow-x-auto shadow-md sm:rounded-lg">
             <table className="w-full text-sm text-left border-collapse">
               <thead className="text-xs uppercase bg-gray-200">
@@ -957,56 +969,135 @@ const MemoComponent = ({
               </thead>
               <tbody>
                 {getCurrentItems().map((po, index) => (
-                  <tr key={`${po.id}-${index}`} className={getStatusClass(po.status)}>
-                    <td className="border p-2">
-                      <input
-                        type="checkbox"
-                        checked={!!selectedItems[po.id]}
-                        onChange={() => handleCheckboxChange(po.id)}
-                      />
-                    </td>
-                    <td className="border p-2">
-                      {po.isMainRow && (
-                        <button onClick={() => toggleRowExpand(po.id)}>
-                          {expandedRows[po.id] ? '▼' : '▶'}
-                        </button>
-                      )}
-                    </td>
-                    <td className="border p-2">
-                      {po.isMainRow ? (
-                        <select
-                          value={po.status}
-                          onChange={(e) => handleStatusChange(po.id, e.target.value)}
-                          className="border rounded p-1 w-full"
-                        >
-                          <option value="手配前">手配前</option>
-                          <option value="手配中">手配中</option>
-                          <option value="手配済">手配済</option>
-                          <option value="計上済">計上済</option>
-                        </select>
-                      ) : (
-                        po.status
-                      )}
-                    </td>
-                    <td className="border p-2">{po.manager || "-"}</td>
-                    <td className="border p-2">{po.organization || "-"}</td>
-                    <td className="border p-2">{po.invoiceNumber || "-"}</td>
-                    <td className="border p-2">{po.poNumber || "-"}</td>
-                    <td className="border p-2">{po.customer || "-"}</td>
-                    <td className="border p-2">{po.productName || "-"}</td>
-                    <td className="border p-2">{po.quantity ?? "-"}</td>
-                    <td className="border p-2">{po.unitPrice ?? "-"}</td>
-                    <td className="border p-2">{po.amount ?? "-"}</td>
-                    <td className="border p-2">{po.etd ?? "-"}</td>
-                    <td className="border p-2">{po.destination || "-"}</td>
-                  </tr>
+                  <React.Fragment key={`${po.id}-${index}`}>
+                    {/* 通常の行 */}
+                    <tr className={getStatusClass(po.status)}>
+                      <td className="border p-2">
+                        {po.isMainRow && (
+                          <input
+                            type="checkbox"
+                            checked={!!selectedItems[po.id]}
+                            onChange={() => handleCheckboxChange(po.id)}
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                          />
+                        )}
+                      </td>
+                      <td className="border p-2">
+                        {po.isMainRow && (
+                          <button 
+                            onClick={() => toggleRowExpand(po.id)} 
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            {expandedRows[po.id] ? '▼' : '▶'}
+                          </button>
+                        )}
+                      </td>
+                      <td className="border p-2">
+                        {po.isMainRow ? (
+                          <select
+                            value={po.status || '手配前'}
+                            onChange={(e) => handleStatusChange(po.id, e.target.value)}
+                            className="border rounded p-1 w-full"
+                          >
+                            <option value="手配前">手配前</option>
+                            <option value="手配中">手配中</option>
+                            <option value="手配済">手配済</option>
+                            <option value="計上済">計上済</option>
+                          </select>
+                        ) : (
+                          po.status || '手配前'
+                        )}
+                      </td>
+                      <td className="border p-2">{po.manager || "-"}</td>
+                      <td className="border p-2">{po.organization || "-"}</td>
+                      <td className="border p-2">{po.invoiceNumber || "-"}</td>
+                      <td className="border p-2">{po.poNumber || "-"}</td>
+                      <td className="border p-2">{po.customer || "-"}</td>
+                      <td className="border p-2">{po.productName || "-"}</td>
+                      <td className="border p-2">{po.quantity ?? "-"}</td>
+                      <td className="border p-2">{po.unitPrice ?? "-"}</td>
+                      <td className="border p-2">{po.amount ?? "-"}</td>
+                      <td className="border p-2">{po.etd ?? "-"}</td>
+                      <td className="border p-2">{po.destination || "-"}</td>
+                    </tr>
+      
+                    {/* ここから追加: アコーディオン式の展開行 */}
+                    {expandedRows[po.id] && po.isMainRow && (
+                      <tr className={`${getStatusClass(po.status)} text-xs`}>
+                        <td colSpan={14} className="border p-2">
+                          <div className="grid grid-cols-4 gap-2">
+                            {/* 詳細情報の各項目 */}
+                            <div className="mb-2">
+                              <div className="font-bold">取得日:</div>
+                              <div>{po.acquisitionDate || "-"}</div>
+                            </div>
+                            <div className="mb-2">
+                              <div className="font-bold">伝票:</div>
+                              <div>{po.invoice || "-"}</div>
+                            </div>
+                            <div className="mb-2">
+                              <div className="font-bold">入金:</div>
+                              <div>{po.payment || "-"}</div>
+                            </div>
+                            <div className="mb-2">
+                              <div className="font-bold">BKG:</div>
+                              <div>{po.booking || "-"}</div>
+                            </div>
+                            <div className="mb-2">
+                              <div className="font-bold">通貨:</div>
+                              <div>{po.currency || "-"}</div>
+                            </div>
+                            <div className="mb-2">
+                              <div className="font-bold">支払条件:</div>
+                              <div>{po.paymentTerms || "-"}</div>
+                            </div>
+                            <div className="mb-2">
+                              <div className="font-bold">ターム:</div>
+                              <div>{po.terms || "-"}</div>
+                            </div>
+                            <div className="mb-2">
+                              <div className="font-bold">経由地:</div>
+                              <div>{po.transitPoint || "-"}</div>
+                            </div>
+                            <div className="mb-2">
+                              <div className="font-bold">ETA:</div>
+                              <div>{po.eta || "-"}</div>
+                            </div>
+                            <div className="mb-2">
+                              <div className="font-bold">BKG No.:</div>
+                              <div>{po.bookingNumber || "-"}</div>
+                            </div>
+                            <div className="mb-2">
+                              <div className="font-bold">船名:</div>
+                              <div>{po.vesselName || "-"}</div>
+                            </div>
+                            <div className="mb-2">
+                              <div className="font-bold">Voy No.:</div>
+                              <div>{po.voyageNumber || "-"}</div>
+                            </div>
+                            <div className="mb-2">
+                              <div className="font-bold">コンテナ:</div>
+                              <div>{po.containerInfo || "-"}</div>
+                            </div>
+                            
+                            {/* メモ欄 - 全幅で表示 */}
+                            <div className="mb-2 col-span-4">
+                              <div className="font-bold">メモ:</div>
+                              <div className="memo-cell expanded-memo">
+                                <MemoComponent poId={po.id} memo={po.memo} />
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    {/* ここまで追加: アコーディオン式の展開行 */}
+                  </React.Fragment>
                 ))}
-
               </tbody>
             </table>
           </div>
-
-          {/* ✅⬇️ ここは既存のままページネーション */}
+      
           {totalPages > 1 && renderPagination()}
         </div>
       )}
