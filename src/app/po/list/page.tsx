@@ -23,6 +23,23 @@ interface PO {
   status: string;
   memo?: string;
   products?: Product[];
+  productDetail?: Product; // ← 追加
+  productName?: string;
+  quantity?: number;
+  unitPrice?: number;
+  amount?: number;
+  isMainRow?: boolean;
+  invoiceNumber?: string;
+  eta?: string;
+  destination?: string;
+  organization?: string;
+  paymentTerms?: string;
+  terms?: string;
+  transitPoint?: string;
+  bookingNumber?: string;
+  vesselName?: string;
+  voyageNumber?: string;
+  currency?: string;
 }
 
 interface APIResponse {
@@ -149,6 +166,7 @@ const POListPage = () => {
           }
         });
   
+        console.log("展開リスト:", expandedList); // ← ここ追加
         setExpandedProductsList(expandedList);
         setPOList(expandedList);
         setOriginalData(response.data.po_list);
@@ -551,9 +569,16 @@ const MemoComponent = ({
   const getCurrentItems = () => {
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    return poList.slice(indexOfFirstItem, indexOfLastItem);
+    return expandedProductsList.slice(indexOfFirstItem, indexOfLastItem);
   };
+
   
+  console.log("表示対象POデータ:", getCurrentItems());
+  console.log("全展開データ（expandedProductsList）:", expandedProductsList);
+
+
+
+
   // 総ページ数の計算
   const totalPages = Math.ceil(poList.length / itemsPerPage);
   
@@ -909,11 +934,83 @@ const MemoComponent = ({
         </div>
       ) : (
         <div>
-          {/* ここに table / map / row 展開処理... */}
-          {/* 最後にページネーションとモーダル */}
+          {/* ✅⬇️ ここに挿入します */}
+          <div className="overflow-x-auto shadow-md sm:rounded-lg">
+            <table className="w-full text-sm text-left border-collapse">
+              <thead className="text-xs uppercase bg-gray-200">
+                <tr>
+                  <th className="border p-2 w-10"></th>
+                  <th className="border p-2"></th>
+                  <th className="border p-2">出荷手配</th>
+                  <th className="border p-2">担当者</th>
+                  <th className="border p-2">組織</th>
+                  <th className="border p-2">INV No.</th>
+                  <th className="border p-2">PO No.</th>
+                  <th className="border p-2">顧客</th>
+                  <th className="border p-2">製品名称</th>
+                  <th className="border p-2">数量(kg)</th>
+                  <th className="border p-2">単価</th>
+                  <th className="border p-2">金額</th>
+                  <th className="border p-2">ETD</th>
+                  <th className="border p-2">揚げ地</th>
+                </tr>
+              </thead>
+              <tbody>
+                {getCurrentItems().map((po, index) => (
+                  <tr key={`${po.id}-${index}`} className={getStatusClass(po.status)}>
+                    <td className="border p-2">
+                      <input
+                        type="checkbox"
+                        checked={!!selectedItems[po.id]}
+                        onChange={() => handleCheckboxChange(po.id)}
+                      />
+                    </td>
+                    <td className="border p-2">
+                      {po.isMainRow && (
+                        <button onClick={() => toggleRowExpand(po.id)}>
+                          {expandedRows[po.id] ? '▼' : '▶'}
+                        </button>
+                      )}
+                    </td>
+                    <td className="border p-2">
+                      {po.isMainRow ? (
+                        <select
+                          value={po.status}
+                          onChange={(e) => handleStatusChange(po.id, e.target.value)}
+                          className="border rounded p-1 w-full"
+                        >
+                          <option value="手配前">手配前</option>
+                          <option value="手配中">手配中</option>
+                          <option value="手配済">手配済</option>
+                          <option value="計上済">計上済</option>
+                        </select>
+                      ) : (
+                        po.status
+                      )}
+                    </td>
+                    <td className="border p-2">{po.manager || "-"}</td>
+                    <td className="border p-2">{po.organization || "-"}</td>
+                    <td className="border p-2">{po.invoiceNumber || "-"}</td>
+                    <td className="border p-2">{po.poNumber || "-"}</td>
+                    <td className="border p-2">{po.customer || "-"}</td>
+                    <td className="border p-2">{po.productName || "-"}</td>
+                    <td className="border p-2">{po.quantity ?? "-"}</td>
+                    <td className="border p-2">{po.unitPrice ?? "-"}</td>
+                    <td className="border p-2">{po.amount ?? "-"}</td>
+                    <td className="border p-2">{po.etd ?? "-"}</td>
+                    <td className="border p-2">{po.destination || "-"}</td>
+                  </tr>
+                ))}
+
+              </tbody>
+            </table>
+          </div>
+
+          {/* ✅⬇️ ここは既存のままページネーション */}
           {totalPages > 1 && renderPagination()}
         </div>
       )}
+
   
       {/* 削除確認モーダル */}
       {renderDeleteConfirmModal()}
