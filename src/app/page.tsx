@@ -176,185 +176,195 @@ export default function Home() {
         <div className="flex justify-center flex-col lg:flex-row gap-6 w-full">
 
         {/* 検索フォーム全体をカードで囲む*/}
-        <div className="w-full lg:w-1/3 p-6 bg-white rounded-xl shadow-md space-y-4 mb-8">
-        <h1 className="text-base font-semibold text-gray-800 bg-blue-100 px-4 py-2 rounded-xl">スケジュール検索</h1>
-
-        {/* 検索フォーム */}
-        <div className="mb-4">
-          <label className="block mb-1 font-semibold">出港地：</label>
-            <select className="w-full p-2 border rounded" value={departure} onChange={(e) => setDeparture(e.target.value)}>
-            <option value="">選択してください</option>
-            {Object.keys(DEPARTURE_DESTINATION_MAP).map((port) => (
-              <option key={port} value={port}>{port}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="mb-4">
-          <label className="block mb-1 font-semibold">目的地：</label>
-          <select
-           className="w-full p-2 border rounded"
-            value={destination}
-            onChange={(e) => setDestination(e.target.value)}
-            disabled={!departure}
-          >
-           <option value="">選択してください</option>
-            {availableDestinations.map((port) => (
-              <option key={port} value={port}>{port}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="mb-4">
-          <label className="block mb-1 font-semibold">出港予定日（ETD）：</label>
-          <input
-           type="date"
-            className="w-full p-2 border rounded"
-            value={etd}
-            onChange={handleEtdChange}
-            disabled={eta !== ""}
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block mb-1 font-semibold">到着予定日（ETA）：</label>
-          <input
-           type="date"
-            className="w-full p-2 border rounded"
-            value={eta}
-            onChange={handleEtaChange}
-            disabled={etd !== ""}
-          />
-        </div>
-
-        <button onClick={handleSubmit} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-          レコメンド取得
-        </button>
-
-        {isLoading && (
-          <div className="mt-4 text-blue-600 border border-blue-300 p-2 rounded bg-blue-50">
-            渡航スケジュールを確認中です...
+        <div className="w-full lg:w-1/3 bg-white rounded-md shadow-md mb-8 overflow-hidden">
+          <div className="bg-[#e6efff] px-4 py-3 flex justify-between items-center">
+            <h1 className="text-lg font-medium">スケジュール検索</h1>
           </div>
-        )}
-      </div>
-
-      {/* 結果表示 */}
-        <div className="w-full lg:w-2/3 px-6 bg-white rounded-xl shadow-md py-4 mb-8">
-        <h2 className="text-base font-semibold text-gray-800 bg-blue-100 px-4 py-2 rounded-xl">レコメンド</h2>
-
-        <div className="mt-4 space-y-4">
-          {results.length === 0 ? (
-          // レコメンド未取得時
-          <div className="border rounded p-4 bg-gray-50 text-gray-400">
-            レコメンド結果はまだありません。
-          </div>
-        ) : (
-         // レコメンド取得時
-          results.map((result, index) => (
-          <div key={index} className={`border rounded p-4 ${getStatusBgColor(result.status)} flex flex-col space-y-2`}>
-          {/* ステータスタグ */}
-          <div className="flex items-center justify-between mb-2">
-            {/* 船会社名とログインボタン（左寄せ） */}
-            <div className="flex items-center space-x-4">
-              <p className="text-xl font-bold">船会社：{result.company}</p>
-              <button className="bg-blue-600 text-white px-3 py-1 text-sm rounded">ログイン</button>
-            </div>
-            {/* ステータスボタン（右寄せ）*/}
-            <div className="space-x-2">
-              <button
-                onClick={() => handleStatusChange(index, "done")}
-                className={`px-3 py-1 rounded text-sm font-semibold 
-                  ${result.status === "done" ? "bg-blue-500 text-white" : "bg-blue-100 text-blue-600"}`}
-                >
-                手配済
-              </button>
-              <button
-                onClick={() => handleStatusChange(index, "processing")}
-                className={`px-3 py-1 rounded text-sm font-semibold 
-                  ${result.status === "processing" ? "bg-red-500 text-white" : "bg-pink-100 text-red-600"}`}
-              >       
-                手配中
-              </button>
-              <button
-                onClick={() => handleStatusChange(index, "exclude")}
-                className={`px-3 py-1 rounded text-sm font-semibold 
-                  ${result.status === "exclude" ? "bg-gray-500 text-white" : "bg-gray-200 text-gray-700"}`}
-              >
-                除外
-              </button>
-            </div>
-          </div>
-
-          <hr className="border-t border-gray-300 mb-3" />
-
-          <div className="ml-4 space-y-1 mt-2 text-gray-800">
-            <p><strong>船名:</strong> {result.vessel}</p>
-            <p><strong>運賃:</strong> ${result.fare} </p>
-            <p><strong>出港日（ETD）:</strong> {result.etd}</p>
-            <p><strong>到着予定日（ETA）:</strong> {result.eta}</p>
-            <p>
-              <a
-                href={result.schedule_url ?? "#"} // ← fallbackを設定
-                className="text-blue-600 underline"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                スケジュールPDFを開く
-              </a>
-            </p>
-          </div>
-
           
-          <hr className="border-t border-gray-300 mb-3" />
+          <div className="p-6">
+            {/* 検索フォーム */}
+            <div className="mb-4">
+              <label className="block mb-1 font-semibold">出港地：</label>
+              <select className="w-full p-2 border rounded" value={departure} onChange={(e) => setDeparture(e.target.value)}>
+                <option value="">選択してください</option>
+                {Object.keys(DEPARTURE_DESTINATION_MAP).map((port) => (
+                  <option key={port} value={port}>{port}</option>
+                ))}
+              </select>
+            </div>
 
-          <div className="mt-4 flex justify-between items-center flex-wrap gap-2">
-           {/* 左側：質問＋Yes/Noボタン＋感謝メッセージ */}
-           <div className="flex items-center gap-2">
-            <span className="text-sm">この抽出内容は適切でしたか？</span>
+            <div className="mb-4">
+              <label className="block mb-1 font-semibold">目的地：</label>
+              <select
+                className="w-full p-2 border rounded"
+                value={destination}
+                onChange={(e) => setDestination(e.target.value)}
+                disabled={!departure}
+              >
+                <option value="">選択してください</option>
+                {availableDestinations.map((port) => (
+                  <option key={port} value={port}>{port}</option>
+                ))}
+              </select>
+            </div>
 
-            <button
-             onClick={() => handleFeedback(index, "yes")}
-              className={`px-3 py-1 rounded border text-sm font-semibold 
-                ${feedbackSentMap[index] === true ? "bg-gray-500 text-white" : "bg-gray-200 text-gray-800 hover:bg-gray-300"}`}
-            >
-              Yes
+            <div className="mb-4">
+              <label className="block mb-1 font-semibold">出港予定日（ETD）：</label>
+              <input
+                type="date"
+                className="w-full p-2 border rounded"
+                value={etd}
+                onChange={handleEtdChange}
+                disabled={eta !== ""}
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block mb-1 font-semibold">到着予定日（ETA）：</label>
+              <input
+                type="date"
+                className="w-full p-2 border rounded"
+                value={eta}
+                onChange={handleEtaChange}
+                disabled={etd !== ""}
+              />
+            </div>
+
+            <button onClick={handleSubmit} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+              レコメンド取得
             </button>
 
-            <button
-              onClick={() => handleFeedback(index, "no")}
-              className={`px-3 py-1 rounded border text-sm font-semibold 
-                ${feedbackSentMap[index] === false ? "bg-gray-500 text-white" : "bg-gray-200 text-gray-800 hover:bg-gray-300"}`}
-            >
-             No
-            </button>
-
-           {feedbackSentMap[index] !== undefined && (
-             <span className="text-green-600 text-sm">フィードバックありがとうございます。</span>
+            {isLoading && (
+              <div className="mt-4 text-blue-600 border border-blue-300 p-2 rounded bg-blue-50">
+                渡航スケジュールを確認中です...
+              </div>
             )}
           </div>
+        </div>
 
-            {/* ChatGPT抽出内容表示 */}
-              <button onClick={() => toggleRaw(index)} className="text-sm text-blue-600 underline">
-                {showRawMap[index] ? "ChatGPTの抽出内容を隠す" : "ChatGPTの抽出内容を表示"}
-              </button>
-                {showRawMap[index] && (
-              <textarea className="w-full h-32 p-2 border rounded mt-2 bg-white" value={result.raw_response} readOnly></textarea>
-                )}
+      {/* 結果表示 */}
+        <div className="w-full lg:w-2/3 bg-white rounded-md shadow-md mb-8 overflow-hidden">
+          {/* ヘッダー部分 - PO読取画面のスタイルに合わせる */}
+          <div className="bg-[#e6efff] px-4 py-3 flex justify-between items-center">
+            <h2 className="text-lg font-medium">レコメンド</h2>
+          </div>
+
+          {/* コンテンツ部分 - パディングを適用 */}
+          <div className="px-6 py-4">
+            {/* 結果リスト */}
+            <div className="mt-4 space-y-4">
+              {results.length === 0 ? (
+                // レコメンド未取得時
+                <div className="border rounded p-4 bg-gray-50 text-gray-400">
+                  レコメンド結果はまだありません。
+               </div>
+             ) : (
+                // レコメンド取得時
+                results.map((result, index) => (
+                 <div key={index} className={`border rounded p-4 ${getStatusBgColor(result.status)} flex flex-col space-y-2`}>
+                  {/* ステータスタグ */}
+                  <div className="flex items-center justify-between mb-2">
+                    {/* 船会社名とログインボタン（左寄せ） */}
+                    <div className="flex items-center space-x-4">
+                    <p className="text-xl font-bold">船会社：{result.company}</p>
+                    <button className="bg-blue-600 text-white px-3 py-1 text-sm rounded">ログイン</button>
+                  </div>
+                    {/* ステータスボタン（右寄せ）*/}
+                    <div className="space-x-2">
+                      <button
+                       onClick={() => handleStatusChange(index, "done")}
+                       className={`px-3 py-1 rounded text-sm font-semibold 
+                         ${result.status === "done" ? "bg-blue-500 text-white" : "bg-blue-100 text-blue-600"}`}
+                      >
+                        ＢＫＧ済
+                      </button>
+                      <button
+                        onClick={() => handleStatusChange(index, "processing")}
+                        className={`px-3 py-1 rounded text-sm font-semibold 
+                         ${result.status === "processing" ? "bg-red-500 text-white" : "bg-pink-100 text-red-600"}`}
+                      >       
+                        ＢＫＧ中
+                      </button>
+                      <button
+                        onClick={() => handleStatusChange(index, "exclude")}
+                        className={`px-3 py-1 rounded text-sm font-semibold 
+                          ${result.status === "exclude" ? "bg-gray-500 text-white" : "bg-gray-200 text-gray-700"}`}
+                      >
+                        除外
+                      </button>
+                    </div>
+                  </div>
+
+                  <hr className="border-t border-gray-300 mb-3" />
+
+                  <div className="ml-4 space-y-1 mt-2 text-gray-800">
+                    <p><strong>船名:</strong> {result.vessel}</p>
+                    <p><strong>運賃:</strong> ${result.fare} </p>
+                    <p><strong>出港日（ETD）:</strong> {result.etd}</p>
+                    <p><strong>到着予定日（ETA）:</strong> {result.eta}</p>
+                    <p>
+                      <a
+                        href={result.schedule_url ?? "#"} // ← fallbackを設定
+                        className="text-blue-600 underline"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        スケジュールPDFを開く
+                      </a>
+                    </p>
+                  </div>
+
+          
+                  <hr className="border-t border-gray-300 mb-3" />
+
+                  <div className="mt-4 flex justify-between items-center flex-wrap gap-2">
+                    {/* 左側：質問＋Yes/Noボタン＋感謝メッセージ */}
+                      <div className="flex items-center gap-2">
+                      <span className="text-sm">この抽出内容は適切でしたか？</span>
+
+                      <button
+                        onClick={() => handleFeedback(index, "yes")}
+                        className={`px-3 py-1 rounded border text-sm font-semibold 
+                          ${feedbackSentMap[index] === true ? "bg-gray-500 text-white" : "bg-gray-200 text-gray-800 hover:bg-gray-300"}`}
+                      >
+                        Yes
+                      </button>
+
+                      <button
+                        onClick={() => handleFeedback(index, "no")}
+                        className={`px-3 py-1 rounded border text-sm font-semibold 
+                          ${feedbackSentMap[index] === false ? "bg-gray-500 text-white" : "bg-gray-200 text-gray-800 hover:bg-gray-300"}`}
+                      >
+                        No
+                      </button>
+
+                      {feedbackSentMap[index] !== undefined && (
+                        <span className="text-green-600 text-sm">フィードバックありがとうございます。</span>
+                        )}
+                  </div>
+
+                  {/* ChatGPT抽出内容表示 */}
+                  <button onClick={() => toggleRaw(index)} className="text-sm text-blue-600 underline">
+                    {showRawMap[index] ? "ChatGPTの抽出内容を隠す" : "ChatGPTの抽出内容を表示"}
+                  </button>
+                    {showRawMap[index] && (
+                      <textarea className="w-full h-32 p-2 border rounded mt-2 bg-white" value={result.raw_response} readOnly></textarea>
+                    )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+           {/* エラーメッセージ（共通） */}
+            {(submitted && !isLoading && (error || results.length === 0)) && (
+              <div className="mt-4 text-red-600 border border-red-300 p-2 rounded bg-red-50">
+                {error || "該当する船便がありませんでした。"}
+              </div>
+            )}
+            </div>
           </div>
         </div>
-      ))
-    )}
-  </div>
-
-  {/* エラーメッセージ（共通） */}
-  {(submitted && !isLoading && (error || results.length === 0)) && (
-    <div className="mt-4 text-red-600 border border-red-300 p-2 rounded bg-red-50">
-      {error || "該当する船便がありませんでした。"}
-    </div>
-  )}
-  </div>
-    </div>
-
   </div> 
 
   <Script
