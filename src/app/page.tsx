@@ -22,8 +22,6 @@ const DEPARTURE_DESTINATION_MAP: Record<string, string[]> = {
   Tokyo: ["Shanghai", "Singapore", "Los Angeles", "Rotterdam", "Hamburg", "Dubai", "New York", "Hong Kong", "Busan", "Sydney"]
 };
 
-
-
 export default function Home() {
   const [departure, setDeparture] = useState("");
   const [destination, setDestination] = useState("");
@@ -37,6 +35,29 @@ export default function Home() {
   const [showRawMap, setShowRawMap] = useState<Record<string, boolean>>({});
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // 船会社のログインURLマッピング
+  const MOCK_COMPANY_LOGIN_URLS: Record<string, string> = {
+    "NYK": "https://www.nyk.com/",
+    "ONE": "https://jp.one-line.com/ja/user/login",
+    "MAERSK": "https://accounts.maersk.com/ocean-maeu/auth/login",
+    "MSC": "https://www.msc.com/ja/ebusiness",
+    "CMA CGM": "https://www.cma-cgm.com/",
+    "COSCO": "https://world.lines.coscoshipping.com/japan/jp/home",
+    "Evergreen": "https://www.shipmentlink.com/jp/"
+  };
+
+  // Toyoshigoリンクのマッピング
+  const MOCK_TOYOSHINGO_URLS: Record<string, string> = {
+    "NYK": "https://toyoshingo.com/nyk/",
+    "ONE": "https://toyoshingo.com/one/",
+    "MAERSK": "https://toyoshingo.com/maersk/",
+    "MSC": "https://toyoshingo.com/msc/",
+    "CMA CGM": "https://toyoshingo.com/cmacgm/",
+    "COSCO": "https://toyoshingo.com/cosco/", 
+    "Evergreen": "https://toyoshingo.com/evergreen/"
+  };
+
   const handleStatusChange = (index: number, newStatus: "done" | "processing" | "exclude") => {
     const updated = [...results];
     const currentStatus = updated[index].status;
@@ -243,16 +264,19 @@ export default function Home() {
         </div>
 
       {/* 結果表示 */}
-        <div className="w-full lg:w-2/3 bg-white rounded-md shadow-md mb-8 overflow-hidden">
-          {/* ヘッダー部分 - PO読取画面のスタイルに合わせる */}
+        <div className="w-full lg:w-2/3 bg-white rounded-md shadow-md mb-8 overflow-hidden flex flex-col">
+          {/* ヘッダー部分 - 固定 */}
           <div className="bg-[#e6efff] px-4 py-3 flex justify-between items-center">
             <h2 className="text-lg font-medium">レコメンド</h2>
+            {results.length > 0 && (
+              <span className="text-sm text-gray-600">{results.length}件の結果</span>
+            )}
           </div>
 
           {/* コンテンツ部分 - パディングを適用 */}
-          <div className="px-6 py-4">
+           <div className="px-6 py-4 overflow-hidden">
             {/* 結果リスト */}
-            <div className="mt-4 space-y-4">
+            <div className="h-[calc(100vh-280px)] overflow-y-auto pr-2">
               {results.length === 0 ? (
                 // レコメンド未取得時
                 <div className="border rounded p-4 bg-gray-50 text-gray-400">
@@ -267,7 +291,18 @@ export default function Home() {
                     {/* 船会社名とログインボタン（左寄せ） */}
                     <div className="flex items-center space-x-4">
                     <p className="text-xl font-bold">船会社：{result.company}</p>
-                    <button className="bg-blue-600 text-white px-3 py-1 text-sm rounded">ログイン</button>
+                    <button 
+                      onClick={() => {
+                        const url = MOCK_COMPANY_LOGIN_URLS[result.company];
+                        if (url) {
+                          window.open(url, '_blank');
+                        } else {
+                          alert('この船会社のログインURLは現在登録されていません。');
+                        }
+                      }}
+                      className="bg-blue-500 text-white px-3 py-1 text-sm rounded hover:bg-blue-700"
+                  >
+                      ログイン</button>
                   </div>
                     {/* ステータスボタン（右寄せ）*/}
                     <div className="space-x-2">
@@ -311,6 +346,18 @@ export default function Home() {
                       >
                         スケジュールPDFを開く
                       </a>
+                      
+                      <span className="mx-6">|</span>
+                       
+                      <a
+                        href={MOCK_TOYOSHINGO_URLS[result.company] || "#"}
+                        className="text-blue-600 underline"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Toyoshingoを確認する
+                      </a>
+
                     </p>
                   </div>
 

@@ -65,7 +65,7 @@ const Navbar = () => {
         {isDevelopment && (
           <div className="relative ml-4">
             <button 
-              className="px-4 h-[60px] text-[16px] bg-amber-500 text-white flex items-center"
+              className="px-6 h-[60px] text-[18px] bg-amber-500 text-white flex items-center"
               onClick={() => setShowDevMenu(!showDevMenu)}
             >
               開発環境
