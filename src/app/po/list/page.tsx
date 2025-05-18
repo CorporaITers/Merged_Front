@@ -934,7 +934,7 @@ const MemoComponent = ({
       </div>
   
       {/* ローディング・空データ・テーブル本体 */}
-// 展開行の詳細情報を表示するコードを追加
+{/* // 展開行の詳細情報を表示するコードを追加 */}
 
       {isLoading ? (
         <div className="text-center py-10">
