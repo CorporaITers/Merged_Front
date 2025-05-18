@@ -169,115 +169,89 @@ export default function Home() {
 
   return (
     <>
-    {/* ヘッダー */}
-    <header className="bg-[#2f52db] text-white flex items-center px-4 h-[60px] shadow-md">
-      <div className="text-[22px] font-bold mr-32">DigiTradeX</div>
-        <nav className="flex">
-         <a
-          href="https://tech0-gen-8-step4-dtx-pofront-b8dygjdpcgcbg8cd.canadacentral-01.azurewebsites.net/"
-          className="px-6 h-[60px] text-[18px] hover:bg-white/10 transition flex items-center"
-          >
-            PO読取
-        </a>
-        <a
-          href="https://tech0-gen-8-step4-dtx-pofront-b8dygjdpcgcbg8cd.canadacentral-01.azurewebsites.net/po/list"
-          className="px-6 h-[60px] text-[18px] hover:bg-white/10 transition flex items-center"
-        >
-            一覧
-        </a>
-          <button className="px-6 h-[60px] text-[18px] bg-[#dce8ff] text-[rgba(0,0,0,0.8)] font-medium">船ブッキング</button>
-          <a
-            href="https://tech0-gen-8-step4-dtx-sbfront-a2dde6enhbghc8bx.canadacentral-01.azurewebsites.net/forecast"
-            className="px-6 h-[60px] text-[18px] hover:bg-white/10 transition flex items-center"
-          >
-            バンニング見込み
-          </a>
-        </nav>
-    </header>
+      {/* メイン */}
+      <div className="p-8 w-full max-w-none bg-gray-50 min-h-screen pb-16">
 
-    {/* メイン */}
-    <div className="p-8 w-full max-w-none bg-gray-50 min-h-screen">
+        {/* 検索フォームと結果を横並びにするflex */}
+        <div className="flex justify-center flex-col lg:flex-row gap-6 w-full">
 
-    {/* 検索フォームと結果を横並びにするflex */}
-    <div className="flex justify-center flex-col lg:flex-row gap-6 w-full">
+        {/* 検索フォーム全体をカードで囲む*/}
+        <div className="w-full lg:w-1/3 p-6 bg-white rounded-xl shadow-md space-y-4 mb-8">
+        <h1 className="text-base font-semibold text-gray-800 bg-blue-100 px-4 py-2 rounded-xl">スケジュール検索</h1>
 
-      {/* 検索フォーム全体をカードで囲む*/}
-      <div className="w-full lg:w-1/3 p-6 bg-white rounded-xl shadow-md space-y-4 mb-8">
-      <h1 className="text-base font-semibold text-gray-800 bg-blue-100 px-4 py-2 rounded-xl">スケジュール検索</h1>
-
-      {/* 検索フォーム */}
-      <div className="mb-4">
-        <label className="block mb-1 font-semibold">出港地：</label>
-        <select className="w-full p-2 border rounded" value={departure} onChange={(e) => setDeparture(e.target.value)}>
-          <option value="">選択してください</option>
-          {Object.keys(DEPARTURE_DESTINATION_MAP).map((port) => (
-            <option key={port} value={port}>{port}</option>
-          ))}
-        </select>
-      </div>
-
-      <div className="mb-4">
-        <label className="block mb-1 font-semibold">目的地：</label>
-        <select
-          className="w-full p-2 border rounded"
-          value={destination}
-          onChange={(e) => setDestination(e.target.value)}
-          disabled={!departure}
-        >
-          <option value="">選択してください</option>
-          {availableDestinations.map((port) => (
-            <option key={port} value={port}>{port}</option>
-          ))}
-        </select>
-      </div>
-
-      <div className="mb-4">
-        <label className="block mb-1 font-semibold">出港予定日（ETD）：</label>
-        <input
-          type="date"
-          className="w-full p-2 border rounded"
-          value={etd}
-          onChange={handleEtdChange}
-          disabled={eta !== ""}
-        />
-      </div>
-
-      <div className="mb-4">
-        <label className="block mb-1 font-semibold">到着予定日（ETA）：</label>
-        <input
-          type="date"
-          className="w-full p-2 border rounded"
-          value={eta}
-          onChange={handleEtaChange}
-          disabled={etd !== ""}
-        />
-      </div>
-
-      <button onClick={handleSubmit} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-        レコメンド取得
-      </button>
-
-      {isLoading && (
-        <div className="mt-4 text-blue-600 border border-blue-300 p-2 rounded bg-blue-50">
-          渡航スケジュールを確認中です...
+        {/* 検索フォーム */}
+        <div className="mb-4">
+          <label className="block mb-1 font-semibold">出港地：</label>
+            <select className="w-full p-2 border rounded" value={departure} onChange={(e) => setDeparture(e.target.value)}>
+            <option value="">選択してください</option>
+            {Object.keys(DEPARTURE_DESTINATION_MAP).map((port) => (
+              <option key={port} value={port}>{port}</option>
+            ))}
+          </select>
         </div>
-      )}
+
+        <div className="mb-4">
+          <label className="block mb-1 font-semibold">目的地：</label>
+          <select
+           className="w-full p-2 border rounded"
+            value={destination}
+            onChange={(e) => setDestination(e.target.value)}
+            disabled={!departure}
+          >
+           <option value="">選択してください</option>
+            {availableDestinations.map((port) => (
+              <option key={port} value={port}>{port}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="mb-4">
+          <label className="block mb-1 font-semibold">出港予定日（ETD）：</label>
+          <input
+           type="date"
+            className="w-full p-2 border rounded"
+            value={etd}
+            onChange={handleEtdChange}
+            disabled={eta !== ""}
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block mb-1 font-semibold">到着予定日（ETA）：</label>
+          <input
+           type="date"
+            className="w-full p-2 border rounded"
+            value={eta}
+            onChange={handleEtaChange}
+            disabled={etd !== ""}
+          />
+        </div>
+
+        <button onClick={handleSubmit} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+          レコメンド取得
+        </button>
+
+        {isLoading && (
+          <div className="mt-4 text-blue-600 border border-blue-300 p-2 rounded bg-blue-50">
+            渡航スケジュールを確認中です...
+          </div>
+        )}
       </div>
 
-     {/* 結果表示 */}
-<div className="w-full lg:w-2/3 px-6 bg-white rounded-xl shadow-md py-4 mb-8">
-  <h2 className="text-base font-semibold text-gray-800 bg-blue-100 px-4 py-2 rounded-xl">レコメンド</h2>
+      {/* 結果表示 */}
+        <div className="w-full lg:w-2/3 px-6 bg-white rounded-xl shadow-md py-4 mb-8">
+        <h2 className="text-base font-semibold text-gray-800 bg-blue-100 px-4 py-2 rounded-xl">レコメンド</h2>
 
-  <div className="mt-4 space-y-4">
-    {results.length === 0 ? (
-      // レコメンド未取得時
-      <div className="border rounded p-4 bg-gray-50 text-gray-400">
-        レコメンド結果はまだありません。
-      </div>
-    ) : (
-      // レコメンド取得時
-      results.map((result, index) => (
-        <div key={index} className={`border rounded p-4 ${getStatusBgColor(result.status)} flex flex-col space-y-2`}>
+        <div className="mt-4 space-y-4">
+          {results.length === 0 ? (
+          // レコメンド未取得時
+          <div className="border rounded p-4 bg-gray-50 text-gray-400">
+            レコメンド結果はまだありません。
+          </div>
+        ) : (
+         // レコメンド取得時
+          results.map((result, index) => (
+          <div key={index} className={`border rounded p-4 ${getStatusBgColor(result.status)} flex flex-col space-y-2`}>
           {/* ステータスタグ */}
           <div className="flex items-center justify-between mb-2">
             {/* 船会社名とログインボタン（左寄せ） */}
@@ -380,14 +354,6 @@ export default function Home() {
   )}
   </div>
     </div>
-
-    <footer className="fixed bottom-0 left-0 w-full bg-[#2f52db] text-white text-sm px-6 py-5 z-30 flex items-center">
-      <div className="flex gap-6">
-        <a href="#" className="hover:underline">こんな時は？</a>
-        <a href="#" className="hover:underline">お問い合わせ</a>
-      </div>
-    </footer>
-
 
   </div> 
 
