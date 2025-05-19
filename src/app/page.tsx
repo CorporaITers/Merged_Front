@@ -44,7 +44,7 @@ export default function Home() {
     "MSC": "https://www.msc.com/ja/ebusiness",
     "CMA CGM": "https://www.cma-cgm.com/",
     "COSCO": "https://world.lines.coscoshipping.com/japan/jp/home",
-    "Evergreen": "https://www.shipmentlink.com/jp/"
+    "EVERGREEN": "https://www.shipmentlink.com/jp/"
   };
 
   // Toyoshigoリンクのマッピング
@@ -55,7 +55,7 @@ export default function Home() {
     "MSC": "https://toyoshingo.com/msc/",
     "CMA CGM": "https://toyoshingo.com/cmacgm/",
     "COSCO": "https://toyoshingo.com/cosco/", 
-    "Evergreen": "https://toyoshingo.com/evergreen/"
+    "EVERGREEN": "https://toyoshingo.com/evergreen/"
   };
 
   const handleStatusChange = (index: number, newStatus: "done" | "processing" | "exclude") => {
