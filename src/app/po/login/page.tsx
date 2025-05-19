@@ -27,7 +27,7 @@ const LoginPage = () => {
       });
 
       if (response.data.valid) {
-        router.push('/');
+        router.push('/po/uoload');
       } else {
         localStorage.removeItem('token');
       }
@@ -63,7 +63,7 @@ const LoginPage = () => {
         if (response.data.user) {
           localStorage.setItem('user', JSON.stringify(response.data.user));
         }
-        router.push('/');
+        router.push('/po/upload');
       } else {
         throw new Error('トークンが見つかりません');
       }
@@ -91,7 +91,7 @@ const LoginPage = () => {
         email: 'test@example.com',
         role: 'admin',
       }));
-      router.push('/');
+      router.push('/po/upload');
     }
   };
 
