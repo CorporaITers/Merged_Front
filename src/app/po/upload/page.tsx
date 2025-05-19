@@ -18,7 +18,7 @@ const POUploadPage = () => {
   const [poData, setPoData] = useState({
     customer_name: '',
     po_number: '',
-    currency: 'USD',
+    currency: '',
     total_amount: '0.00',
     payment_terms: '',
     shipping_terms: '',
