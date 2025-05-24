@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 // import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import ProtectedPage from '../../../components/ProtectedPage'; // この行を追加
@@ -119,7 +119,7 @@ const POListPageContent = () => {
   const [expandedProductsList, setExpandedProductsList] = useState<ExpandedPO[]>([]);
   const [originalData, setOriginalData] = useState<POData[]>([]);
 
-  const fetchPOList = async (): Promise<void> => {
+  const fetchPOList = useCallback(async (): Promise<void> => {
     try {
       setIsLoading(true);
       setError('');
@@ -164,19 +164,21 @@ const POListPageContent = () => {
   
         const results = await Promise.all(productPromises);
   
-        const expandedList: any[] = [];
+        const expandedList: ExpandedPO[] = [];
   
         results.forEach(({ po, products }) => {
           if (products.length === 0) {
             expandedList.push({
               ...po,
+              manager: po.manager || '', // Ensure manager is always a string
               isMainRow: true,
-              productDetail: null
+              productDetail: undefined
             });
           } else {
             products.forEach((product, index) => {
               expandedList.push({
                 ...po,
+                manager: po.manager || '', // Ensure manager is always a string
                 isMainRow: index === 0,
                 productDetail: product,
                 productName: product.product_name,
@@ -212,7 +214,7 @@ const POListPageContent = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   
 
@@ -526,7 +528,7 @@ const MemoComponent = ({
         }
       }, 50);
     }
-  }, [editingMemo, poId, memo]);
+  }, [poId, memo]);
 
   const handleSave = async () => {
     if (isSavingMemo) return;

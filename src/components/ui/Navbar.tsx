@@ -36,12 +36,10 @@ const Navbar = () => {
           token === 'dummy-dev-token' || 
           (user.email && user.email === 'test@example.com')
         );
-      } catch (error) {
+      } catch {
         setIsDevLogin(false);
       }
-    } else {
-      setIsDevLogin(false);
-    }
+    } 
   };
 
   // ログアウト処理（useAuthのlogout関数を使用）

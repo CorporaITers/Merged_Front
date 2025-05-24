@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import '@/app/po/upload/poupload.css';
 import ProtectedPage from '../../../components/ProtectedPage'; // 追加
+import Image from 'next/image'
 
 const API_URL = process.env.NEXT_PUBLIC_API_ENDPOINT || '';
 
@@ -222,17 +223,33 @@ const POUploadPageContent = () => {
     }
   };
 
+  type OCRData = {
+    customer?: string;
+    poNumber?: string;
+    currency?: string;
+    totalAmount?: string;
+    paymentTerms?: string;
+    terms?: string;
+    destination?: string;
+    products?: Array<{
+      name?: string;
+      quantity?: string;
+      unitPrice?: string;
+      amount?: string;
+    }>;
+  };
+  
   const fetchOCRData = async (ocrId: string) => {
-    const token = localStorage.getItem('token');
-    try {
-      const res = await axios.get<{ data?: any }>(
-        `${API_URL}/api/ocr/extract/${ocrId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-
-      const data = res.data?.data || res.data || {};
+      const token = localStorage.getItem('token');
+      try {
+        const res = await axios.get<{ data?: OCRData }>(
+          `${API_URL}/api/ocr/extract/${ocrId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+  
+        const data: OCRData = res.data?.data || {};
 
       setPoData((prev) => ({
         ...prev,
@@ -243,7 +260,7 @@ const POUploadPageContent = () => {
         payment_terms: data.paymentTerms || '',
         shipping_terms: data.terms || '',
         destination: data.destination || '',
-        products: (data.products || []).map((p: any) => ({
+        products: (data.products || []).map((p: { name?: string; quantity?: string; unitPrice?: string; amount?: string }) => ({
           product_name: p.name || '',
           quantity: p.quantity || '',
           unit_price: p.unitPrice || '',
@@ -582,10 +599,13 @@ const POUploadPageContent = () => {
               {viewMode === 'summary' && uploadedFile && (
                 <div className="preview-area">
                   {uploadedFile.type.includes('image') ? (
-                    <img
+                    <Image
                       src={URL.createObjectURL(uploadedFile)}
                       alt="Uploaded PO"
                       className="preview-image"
+                      width={800}  // 適切な幅を指定
+                      height={600} // 適切な高さを指定
+                      unoptimized={true} // Next.jsの最適化を無効化
                     />
                   ) : (
                     <div className="preview-pdf">
