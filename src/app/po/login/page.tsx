@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '@/hooks/useAuth'; // ← 追加
 
@@ -19,9 +19,9 @@ interface LoginResponse {
   user?: User;
 }
 
-interface VerifyResponse {
-  valid: boolean;
-}
+// interface VerifyResponse {
+//   valid: boolean;
+// }
 
 const LoginPage = () => {
   const { isAuthenticated, isLoading: authLoading, login } = useAuth();
