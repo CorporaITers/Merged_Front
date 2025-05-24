@@ -1,78 +1,141 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
-import { useAuth } from '@/hooks/useAuth'; // ← 追加
 
 const API_URL = process.env.NEXT_PUBLIC_API_ENDPOINT || '';
 
-const LoginPage = () => {
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+}
+
+interface LoginResponse {
+  token: string;
+  user?: User;
+}
+
+interface VerifyResponse {
+  valid: boolean;
+}
+
+// 認証チェック関数
+const isAuthenticated = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const token = localStorage.getItem('token');
+  return !!token;
+};
+
+const HomePage = () => {
   const router = useRouter();
-  const { login } = useAuth(); // ← 追加
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [showLoginForm, setShowLoginForm] = useState(false);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) verifyToken(token);
-  }, []);
-
-  const verifyToken = async (token: string) => {
+  const verifyToken = useCallback(async (token: string) => {
     try {
-      const response = await axios.get<{ valid: boolean }>(`${API_URL}/api/auth/verify`, {
+      const response = await axios.get<VerifyResponse>(`${API_URL}/api/auth/verify`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`
         }
       });
 
       if (response.data.valid) {
+        // 認証成功 - メインページにリダイレクト
         router.push('/po/upload');
       } else {
+        // 認証失敗 - トークン削除してログイン画面表示
         localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setShowLoginForm(true);
       }
-    } catch {
+    } catch (error) {
+      console.error('Token verification failed:', error);
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setShowLoginForm(true);
+    } finally {
+      setIsInitializing(false);
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    // サーバーサイドレンダリング時のlocalStorageアクセスを防ぐ
+    if (typeof window === 'undefined') return;
+    
+    const token = localStorage.getItem('token');
+    if (token) {
+      // トークンがある場合は検証
+      verifyToken(token);
+    } else {
+      // トークンがない場合はログインフォーム表示
+      setShowLoginForm(true);
+      setIsInitializing(false);
+    }
+  }, [verifyToken]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
     setIsLoading(true);
 
-    if (!email || !password) {
+    // 入力値のトリム処理
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+
+    if (!trimmedEmail || !trimmedPassword) {
       setErrorMessage('メールアドレスとパスワードを入力してください');
       setIsLoading(false);
       return;
     }
 
+    // 基本的なメールバリデーション
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      setErrorMessage('有効なメールアドレスを入力してください');
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const response = await axios.post<{
-        token: string;
-        user?: {
-          id: number;
-          name: string;
-          email: string;
-          role: string;
-        };
-      }>(`${API_URL}/api/auth/login`, { email, password });
+      const response = await axios.post<LoginResponse>(
+        `${API_URL}/api/auth/login`, 
+        { 
+          email: trimmedEmail, 
+          password: trimmedPassword 
+        }
+      );
 
       if (response.data.token) {
-        // ← ここを修正：useAuthのlogin関数を使用
-        login(response.data.token, response.data.user);
+        localStorage.setItem('token', response.data.token);
+        if (response.data.user) {
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+        }
+        router.push('/po/upload');
       } else {
         throw new Error('トークンが見つかりません');
       }
     } catch (error: any) {
-      if (error.response?.status === 401) {
-        setErrorMessage('メールアドレスとパスワードを確認してください');
-      } else if (error.response?.data?.message) {
-        setErrorMessage(error.response.data.message);
-      } else if (error.request) {
-        setErrorMessage('サーバーに接続できません。ネットワーク接続を確認してください');
+      console.error('Login error:', error);
+      
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          setErrorMessage('メールアドレスまたはパスワードが正しくありません');
+        } else if (error.response?.status === 429) {
+          setErrorMessage('ログイン試行回数が上限に達しました。しばらく時間をおいて再度お試しください');
+        } else if (error.response?.data?.message) {
+          setErrorMessage(error.response.data.message);
+        } else if (error.request) {
+          setErrorMessage('サーバーに接続できません。ネットワーク接続を確認してください');
+        } else {
+          setErrorMessage('ログイン処理中にエラーが発生しました');
+        }
       } else {
         setErrorMessage(error.message || 'ログイン処理中にエラーが発生しました');
       }
@@ -81,18 +144,48 @@ const LoginPage = () => {
     }
   };
 
+  // 開発用ログイン関数を追加
   const handleDevLogin = () => {
     if (process.env.NODE_ENV === 'development') {
-      // ← ここを修正：useAuthのlogin関数を使用
-      login('dummy-dev-token', {
+      localStorage.setItem('token', 'dummy-dev-token');
+      localStorage.setItem('user', JSON.stringify({
         id: 1,
         name: 'テストユーザー',
         email: 'test@example.com',
         role: 'admin',
-      });
+      }));
+      router.push('/po/upload');
     }
   };
 
+  // 認証中の表示
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-200">
+        <div className="bg-white p-8 rounded-lg shadow-sm">
+          <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ログインフォームを表示しない場合（認証済みでリダイレクト中）
+  if (!showLoginForm) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-200">
+        <div className="bg-white p-8 rounded-lg shadow-sm">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto mb-2"></div>
+            <p className="text-gray-600">リダイレクト中...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ログインフォーム表示
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-200">
       <div className="bg-white p-8 rounded-lg shadow-sm w-full max-w-sm">
@@ -145,6 +238,7 @@ const LoginPage = () => {
           </button>
         </form>
 
+        {/* 開発用自動ログインボタンを追加 */}
         {process.env.NODE_ENV === 'development' && (
           <div className="mt-4">
             <button
@@ -160,4 +254,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default HomePage;
