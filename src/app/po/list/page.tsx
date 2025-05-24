@@ -51,22 +51,22 @@ interface PO {
   containerInfo?: string;
 }
 
-interface APIResponse {
-  success: boolean;
-  po_list: PO[];
-}
+// interface APIResponse {
+//   success: boolean;
+//   po_list: PO[];
+// }
 
-interface ProductAPIResponse {
-  products: Product[];
-}
+// interface ProductAPIResponse {
+//   products: Product[];
+// }
 
 const POListPageContent = () => {
   const router = useRouter();
   const [poList, setPOList] = useState<PO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [editingMemoId, setEditingMemoId] = useState<number | null>(null);
-  const [selectedPOs, setSelectedPOs] = useState<number[]>([]);
+  // const [editingMemoId, setEditingMemoId] = useState<number | null>(null);
+  // const [selectedPOs, setSelectedPOs] = useState<number[]>([]);
 
  // ページネーション用の状態
   const [currentPage, setCurrentPage] = useState(1);
@@ -79,7 +79,7 @@ const POListPageContent = () => {
   
   // メモ編集用の状態
   const [editingMemo, setEditingMemo] = useState<number | null>(null);
-  const [memoText, setMemoText] = useState("");
+  // const [memoText, setMemoText] = useState("");
   // 保存中状態の管理
   const [isSavingMemo, setIsSavingMemo] = useState(false);
   
@@ -143,8 +143,12 @@ const POListPageContent = () => {
         const productPromises = response.data.po_list.map((po) =>
           fetchProductDetails(po.id, token)
             .then((products: ProductDetail[]) => ({ po, products }))
-            .catch((err: any) => {
-              console.error(`PO ID ${po.id} の製品情報取得エラー:`, err);
+            .catch((err: unknown) => {
+              if (err instanceof Error) {
+                console.error(`PO ID ${po.id} の製品情報取得エラー:`, err.message);
+              } else {
+                console.error(`PO ID ${po.id} の予期しないエラー:`, err);
+            }
               return { po, products: [] };
             })
         );
@@ -183,9 +187,19 @@ const POListPageContent = () => {
         console.error('不正なレスポンス形式:', response.data);
         throw new Error('サーバーから正しいデータ形式が返されませんでした');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('List fetch error:', error);
-      setError('PO一覧の取得に失敗しました: ' + (error.response?.data?.detail || error.message));
+
+      if (axios.isAxiosError(error)) {
+        // Axios のエラー（通信失敗、APIエラーなど）
+        setError('PO一覧の取得に失敗しました: ' + (error.response?.data?.detail || error.message));
+      } else if (error instanceof Error) {
+        // その他の標準的な JS エラー（TypeError など）
+        setError('PO一覧の取得に失敗しました: ' + error.message);
+      } else {
+        // まったく型がわからないケース
+        setError('PO一覧の取得に失敗しました（詳細不明）');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -275,7 +289,7 @@ const POListPageContent = () => {
   // 初期データ読み込み
   useEffect(() => {
     fetchPOList();
-  }, []);
+  }, [fetchPOList]);
   
   // 出荷手配に応じた背景色クラスを取得
   const getStatusClass = (status: string): string => {
@@ -324,9 +338,16 @@ const POListPageContent = () => {
           po.id === id ? { ...po, status: newStatus } : po
         )
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Status update error:', error);
-      setError('出荷手配更新に失敗しました: ' + (error.response?.data?.detail || error.message));
+
+      if (axios.isAxiosError(error)) {
+        setError('出荷手配更新に失敗しました: ' + (error.response?.data?.detail || error.message));
+      } else if (error instanceof Error) {
+        setError('出荷手配更新に失敗しました: ' + error.message);
+      } else {
+        setError('出荷手配更新に失敗しました（詳細不明）');
+      }
     }
   };
 
@@ -398,74 +419,81 @@ const applyFilters = (): void => {
   setIsLoading(false);
 };
 
-const handleStartEditingMemo = (poId: number, initialMemo: string): void => {
-  if (editingMemo !== null && editingMemo !== poId) {
-    handleCancelEditingMemo();
-  }
-  if (isSavingMemo) return;
-  setEditingMemo(poId); 
-  setMemoText(initialMemo || "");
-};
+// const handleStartEditingMemo = (poId: number, initialMemo: string): void => {
+//   if (editingMemo !== null && editingMemo !== poId) {
+//     handleCancelEditingMemo();
+//   }
+//   if (isSavingMemo) return;
+//   setEditingMemo(poId); 
+//   setMemoText(initialMemo || "");
+// };
 
-const handleCancelEditingMemo = (): void => {
-  if (isSavingMemo) return;
-  setEditingMemo(null);
-  setMemoText("");
-};
+// const handleCancelEditingMemo = (): void => {
+//   if (isSavingMemo) return;
+//   setEditingMemo(null);
+//   setMemoText("");
+// };
 
-const handleSaveMemo = async (poId: number, updatedText: string): Promise<void> => {
-  if (isSavingMemo) return;
-  const memoContent = updatedText.trim() === "" ? " " : updatedText;
-  const now = Date.now();
-  if (now - lastSaveRequestRef.current < 300) {
-    console.log('リクエスト頻度が高すぎます。スキップします。');
-    return;
-  }
-  lastSaveRequestRef.current = now;
+// const handleSaveMemo = async (poId: number, updatedText: string): Promise<void> => {
+//   if (isSavingMemo) return;
+//   const memoContent = updatedText.trim() === "" ? " " : updatedText;
+//   const now = Date.now();
+//   if (now - lastSaveRequestRef.current < 300) {
+//     console.log('リクエスト頻度が高すぎます。スキップします。');
+//     return;
+//   }
+//   lastSaveRequestRef.current = now;
 
-  try {
-    setIsSavingMemo(true);
-    const token = localStorage.getItem('token');
-    if (!token) {
-      throw new Error('認証トークンが見つかりません。再ログインしてください。');
-    }
+//   try {
+//     setIsSavingMemo(true);
+//     const token = localStorage.getItem('token');
+//     if (!token) {
+//       throw new Error('認証トークンが見つかりません。再ログインしてください。');
+//     }
 
-    const response = await axios.put(
-      `${API_URL}/api/po/${poId}/memo`,
-      { memo: memoContent },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+//     const response = await axios.put(
+//       `${API_URL}/api/po/${poId}/memo`,
+//       { memo: memoContent },
+//       {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//           'Content-Type': 'application/json',
+//         },
+//       }
+//     );
 
-    if (response.data && (response.data as any).success) {
-      console.log("メモ更新成功:", response.data);
-      const updatedList = poList.map((po) =>
-        po.id === poId ? { ...po, memo: memoContent } : po
-      );
-      setPOList(updatedList);
-      setExpandedProductsList(
-        expandedProductsList.map((po) =>
-          po.id === poId ? { ...po, memo: memoContent } : po
-        )
-      );
-      setEditingMemo(null);
-      setMemoText("");
-    } else {
-      throw new Error('サーバーからエラーレスポンスが返されました');
-    }
-  } catch (error: any) {
-    console.error('Memo update error:', error);
-    setError('メモの更新に失敗しました: ' + (error.response?.data?.detail || error.message));
-  } finally {
-    setTimeout(() => {
-      setIsSavingMemo(false);
-    }, 500);
-  }
-};
+//     if (response.data && (response.data as any).success) {
+//       console.log("メモ更新成功:", response.data);
+//       const updatedList = poList.map((po) =>
+//         po.id === poId ? { ...po, memo: memoContent } : po
+//       );
+//       setPOList(updatedList);
+//       setExpandedProductsList(
+//         expandedProductsList.map((po) =>
+//           po.id === poId ? { ...po, memo: memoContent } : po
+//         )
+//       );
+//       setEditingMemo(null);
+//       // setMemoText("");
+//     } else {
+//       throw new Error('サーバーからエラーレスポンスが返されました');
+//     }
+//   } catch (error: unknown) {
+//     console.error('Memo update error:', error);
+
+//     if (axios.isAxiosError(error)) {
+//       setError('メモの更新に失敗しました: ' + (error.response?.data?.detail || error.message));
+//     } else if (error instanceof Error) {
+//       setError('メモの更新に失敗しました: ' + error.message);
+//     } else {
+//       setError('メモの更新に失敗しました（詳細不明）');
+//     }
+//   } finally {
+//     setTimeout(() => {
+//       setIsSavingMemo(false);
+//     }, 500);
+//   }
+// };
 
 const MemoComponent = ({
   poId,
@@ -492,20 +520,57 @@ const MemoComponent = ({
   }, [editingMemo, poId, memo]);
 
   const handleSave = async () => {
-    setIsSavingMemo(true);
+    if (isSavingMemo) return;
+
+    const memoContent = localMemoText.trim() === '' ? ' ' : localMemoText;
+
+    const now = Date.now();
+    if (now - lastSaveRequestRef.current < 300) {
+      console.log('リクエスト頻度が高すぎます。スキップします。');
+      return;
+    }
+    lastSaveRequestRef.current = now;
+
     try {
-      await axios.post(`${API_URL}/api/po/update-memo`, {
-        po_id: poId,
-        memo: localMemoText,
-      });
-      setPOList((prevList) =>
-        prevList.map((po) =>
-          po.id === poId ? { ...po, memo: localMemoText } : po
-        )
+      setIsSavingMemo(true);
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('認証トークンが見つかりません。');
+
+      const response = await axios.put(
+        `${API_URL}/api/po/${poId}/memo`,
+        { memo: memoContent },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
       );
-      setEditingMemo(null);
-    } catch (err) {
-      console.error('保存失敗:', err);
+
+      if (response.data && (response.data as any).success) {
+        console.log('メモ更新成功:', response.data);
+        setPOList((prevList) =>
+          prevList.map((po) =>
+            po.id === poId ? { ...po, memo: memoContent } : po
+          )
+        );
+        setExpandedProductsList((prevList) =>
+          prevList.map((po) =>
+            po.id === poId ? { ...po, memo: memoContent } : po
+          )
+        );
+        setEditingMemo(null);
+      } else {
+        throw new Error('サーバーからエラーが返されました');
+      }
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error('保存失敗:', error.response?.data?.detail || error.message);
+      } else if (error instanceof Error) {
+        console.error('保存失敗:', error.message);
+      } else {
+        console.error('保存失敗（詳細不明）:', error);
+      }
     } finally {
       setIsSavingMemo(false);
     }
@@ -650,12 +715,19 @@ const MemoComponent = ({
       setShowDeleteConfirm(false);
       clearSelection();
   
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Delete error:', error);
-      setError(
-        'POの削除に失敗しました: ' +
-          (error?.response?.data?.detail || error.message)
-      );
+
+      if (axios.isAxiosError(error)) {
+        setError(
+          'POの削除に失敗しました: ' +
+            (error.response?.data?.detail || error.message)
+        );
+      } else if (error instanceof Error) {
+        setError('POの削除に失敗しました: ' + error.message);
+      } else {
+        setError('POの削除に失敗しました（詳細不明）');
+      }
     } finally {
       setIsDeleting(false);
       setShowDeleteConfirm(false);
