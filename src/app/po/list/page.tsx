@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import ProtectedPage from '../../../components/ProtectedPage'; // この行を追加
 
 const API_URL = process.env.NEXT_PUBLIC_API_ENDPOINT || '';
 
@@ -59,7 +60,7 @@ interface ProductAPIResponse {
   products: Product[];
 }
 
-const POListPage = () => {
+const POListPageContent = () => {
   const router = useRouter();
   const [poList, setPOList] = useState<PO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -1109,10 +1110,12 @@ const MemoComponent = ({
   );
 };
 
-export default POListPage;
-  
-  
-  
-  
-  
+const POListPage = () => {
+  return (
+    <ProtectedPage>
+      <POListPageContent />
+    </ProtectedPage>
+  );
+};
 
+export default POListPage;
