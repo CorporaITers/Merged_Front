@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import ProtectedPage from '../../../components/ProtectedPage'; // この行を追加
 
@@ -61,7 +61,7 @@ interface PO {
 // }
 
 const POListPageContent = () => {
-  const router = useRouter();
+  // const router = useRouter();
   const [poList, setPOList] = useState<PO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -103,9 +103,8 @@ const POListPageContent = () => {
     customer: string;
     status: string;
     manager?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   }
-  
   
   const [expandedProductsList, setExpandedProductsList] = useState<any[]>([]);
   const [originalData, setOriginalData] = useState<POData[]>([]);
