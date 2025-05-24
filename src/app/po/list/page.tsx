@@ -51,6 +51,16 @@ interface PO {
   containerInfo?: string;
 }
 
+interface ExpandedPO extends PO {
+  productDetail?: Product;
+  productName?: string;
+  quantity?: number;
+  unitPrice?: number;
+  amount?: number;
+  isMainRow?: boolean;
+  etd?: string; // Add the 'etd' property
+}
+
 // interface APIResponse {
 //   success: boolean;
 //   po_list: PO[];
@@ -106,7 +116,7 @@ const POListPageContent = () => {
     [key: string]: unknown;
   }
   
-  const [expandedProductsList, setExpandedProductsList] = useState<any[]>([]);
+  const [expandedProductsList, setExpandedProductsList] = useState<ExpandedPO[]>([]);
   const [originalData, setOriginalData] = useState<POData[]>([]);
 
   const fetchPOList = async (): Promise<void> => {
@@ -546,7 +556,7 @@ const MemoComponent = ({
         }
       );
 
-      if (response.data && (response.data as any).success) {
+      if (response.data && (response.data as { success?: boolean }).success) {
         console.log('メモ更新成功:', response.data);
         setPOList((prevList) =>
           prevList.map((po) =>
