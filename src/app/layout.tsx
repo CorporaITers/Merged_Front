@@ -1,8 +1,8 @@
-'use client';
+// 'use client';
 
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { usePathname } from 'next/navigation';
+// import { usePathname } from 'next/navigation';
 import "./globals.css";
 // 1. ナビゲーションバーとフッターのインポート追加
 import Navbar from "@/components/ui/Navbar";
@@ -19,22 +19,19 @@ const geistMono = Geist_Mono({
 });
 
 // ヘッダー・フッターを非表示にするページ
-const authPages = ['/', '/po/login'];
+// const authPages = ['/', '/po/login'];
 
 // 2. メタデータの更新
-// export const metadata: Metadata = {
-//   title: "DigiTradeX", // "Create Next App"から変更
-//   description: "貿易事務効率化アプリケーション", // より具体的な説明に変更
-// };
+export const metadata: Metadata = {
+  title: "DigiTradeX", // "Create Next App"から変更
+  description: "貿易事務効率化アプリケーション", // より具体的な説明に変更
+};
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
-  const pathname = usePathname();
-  const isAuthPage = authPages.includes(pathname);
-
+}) {
   return (
     // 3. html要素の言語属性を日本語に変更
     <html lang="ja">
@@ -42,13 +39,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {/* 4. navbarコンポーネントを追加 */}
-        {!isAuthPage && <Navbar />}
+        <Navbar /> {/* ← 中で表示制御 */}
         {/* 5. childrenをmainタグで囲み、フッター用の下部余白を追加 */}
-        <main className={isAuthPage ? '' : 'pb-16'}>
-          {children}
-        </main>
+        <main className="pb-16">{children}</main>
         {/* 6. Footerコンポーネントを追加 */}
-        {!isAuthPage && <Footer />}
+        <Footer /> {/* ← 中で表示制御 */}
       </body>
     </html>
   );
