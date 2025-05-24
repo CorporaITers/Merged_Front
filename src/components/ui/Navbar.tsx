@@ -9,46 +9,12 @@ const Navbar = () => {
   const pathname = usePathname();
   const { logout, isAuthenticated } = useAuth();
   
+  // ✅ 全てのstateを最初に配置
   const [showDevMenu, setShowDevMenu] = useState(false);
   const [isDevLogin, setIsDevLogin] = useState(false);
   const isDevelopment = process.env.NODE_ENV === 'development';
 
-  // ✅ ナビゲーションバーを表示しないパス
-  const hideOnPaths = ['/', '/po/login'];
-  if (hideOnPaths.includes(pathname)) {
-    return null;
-  }
-
-  // パスに基づいてアクティブなリンクを判断する関数
-  const isActive = (path: string) => {
-    return pathname === path || pathname.startsWith(path + '/');
-  };
-
-  // 開発ログイン状態をチェックする関数
-  const checkDevLoginStatus = () => {
-    const userStr = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
-    
-    if (userStr && token) {
-      try {
-        const user = JSON.parse(userStr);
-        setIsDevLogin(
-          token === 'dummy-dev-token' || 
-          (user.email && user.email === 'test@example.com')
-        );
-      } catch {
-        setIsDevLogin(false);
-      }
-    } 
-  };
-
-  // ログアウト処理（useAuthのlogout関数を使用）
-  const handleLogout = () => {
-    logout();
-    setShowDevMenu(false);
-  };
-
-  // マウント時と状態変更時に開発ログイン状態をチェック
+  // ✅ 全てのuseEffectを無条件で配置
   useEffect(() => {
     if (typeof window !== 'undefined') {
       checkDevLoginStatus();
@@ -67,10 +33,38 @@ const Navbar = () => {
     }
   }, []);
 
-  // 認証されていない場合は何も表示しない
-  // if (!isAuthenticated) {
-  //   return null;
-  // }
+  // ✅ 関数定義をHooksの後に配置
+  const checkDevLoginStatus = () => {
+    const userStr = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+    
+    if (userStr && token) {
+      try {
+        const user = JSON.parse(userStr);
+        setIsDevLogin(
+          token === 'dummy-dev-token' || 
+          (user.email && user.email === 'test@example.com')
+        );
+      } catch {
+        setIsDevLogin(false);
+      }
+    } 
+  };
+
+  const isActive = (path: string) => {
+    return pathname === path || pathname.startsWith(path + '/');
+  };
+
+  const handleLogout = () => {
+    logout();
+    setShowDevMenu(false);
+  };
+
+  // ✅ 条件チェックをHooksの後に配置
+  const hideOnPaths = ['/', '/po/login'];
+  if (hideOnPaths.includes(pathname)) {
+    return null;
+  }
 
   return (
     <>
@@ -187,7 +181,7 @@ const Navbar = () => {
                     >
                       開発用ログアウト
                     </button>
-                </div>
+                  </div>
                 )}
               </div>
             )}
