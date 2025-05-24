@@ -193,11 +193,9 @@ const Navbar = () => {
             )}
           </div>
         </header>
-     )}
-  </>
-);
-
-// ここに閉じカッコを追加
-}
+      )}
+    </>
+  );
+};
 
 export default Navbar;
