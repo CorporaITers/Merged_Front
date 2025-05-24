@@ -119,7 +119,7 @@ const POListPageContent = () => {
   const [expandedProductsList, setExpandedProductsList] = useState<ExpandedPO[]>([]);
   const [originalData, setOriginalData] = useState<POData[]>([]);
 
-  const fetchProductDetails = async (poId: number, token: string): Promise<ProductDetail[]> => {
+  const fetchProductDetails = useCallback(async (poId: number, token: string): Promise<ProductDetail[]> => {
     try {
       const response = await axios.get<{ success: boolean; products: ProductDetail[] }>(`${API_URL}/api/po/${poId}/products`, {
         headers: {
@@ -154,7 +154,7 @@ const POListPageContent = () => {
       console.error('製品詳細取得エラー:', error);
       return [];
     }
-  };
+  }, [originalData]);
 
   const fetchPOList = useCallback(async (): Promise<void> => {
     try {
