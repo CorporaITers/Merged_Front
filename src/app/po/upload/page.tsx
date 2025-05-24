@@ -182,8 +182,15 @@ const POUploadPageContent = () => {
       } else {
         throw new Error('OCR IDが取得できませんでした');
       }
-    } catch (err: any) {
-      setErrorMessage('アップロードに失敗しました: ' + (err?.message || 'エラー'));
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setErrorMessage('アップロードに失敗しました: ' + (err.response?.data?.detail || err.message));
+      } else if (err instanceof Error) {
+        setErrorMessage('アップロードに失敗しました: ' + err.message);
+      } else {
+        setErrorMessage('アップロードに失敗しました（詳細不明）');
+      }
+
       setViewMode('upload');
       setIsProcessing(false);
     }
@@ -248,8 +255,15 @@ const POUploadPageContent = () => {
       setViewMode('summary');
       setIsProcessing(false);
       setSuccessMessage('OCR結果を取得しました');
-    } catch (err: any) {
-      setErrorMessage('OCRデータ取得エラー: ' + (err?.message || 'エラー'));
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setErrorMessage('OCRデータ取得エラー: ' + (err.response?.data?.detail || err.message));
+      } else if (err instanceof Error) {
+        setErrorMessage('OCRデータ取得エラー: ' + err.message);
+      } else {
+        setErrorMessage('OCRデータ取得エラー（詳細不明）');
+      }
+
       setViewMode('upload');
       setIsProcessing(false);
     }
@@ -259,6 +273,13 @@ const POUploadPageContent = () => {
   const confirmRegistration = async () => {
     setShowConfirmDialog(false);
     const token = localStorage.getItem('token');
+    if (!token) {
+      setErrorMessage('認証トークンがありません。再ログインしてください。');
+      return;
+    }
+
+    setIsProcessing(true); // スピナー表示開始
+    
     try {
       const payload = {
         customer: poData.customer_name,
@@ -300,8 +321,17 @@ const POUploadPageContent = () => {
       } else {
         throw new Error('登録に失敗しました');
       }
-    } catch (err: any) {
-      setErrorMessage('登録失敗: ' + (err?.message || 'エラー'));
+
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setErrorMessage('登録失敗: ' + (err.response?.data?.detail || err.message));
+      } else if (err instanceof Error) {
+        setErrorMessage('登録失敗: ' + err.message);
+      } else {
+        setErrorMessage('登録失敗: 不明なエラーが発生しました');
+      }
+    } finally {
+      setIsProcessing(false); // スピナー終了
     }
   };
 
@@ -542,7 +572,7 @@ const POUploadPageContent = () => {
                 </div>
               )}
   
-              {viewMode === 'processing' && (
+              {(viewMode === 'processing' || isProcessing) && (
                 <div className="processing-area">
                   <p className="processing-text">画像を解析しています...</p>
                   <div className="spinner"></div>

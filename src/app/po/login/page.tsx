@@ -33,33 +33,6 @@ const LoginPage = () => {
   const [isInitializing, setIsInitializing] = useState(true);
   const [showLoginForm, setShowLoginForm] = useState(false);
 
-  const verifyToken = useCallback(async (token: string) => {
-    try {
-      const response = await axios.get<VerifyResponse>(`${API_URL}/api/auth/verify`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      if (response.data.valid) {
-        // 認証成功 - メインページにリダイレクト
-        router.push('/po/upload');
-      } else {
-        // 認証失敗 - トークン削除してログイン画面表示
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setShowLoginForm(true);
-      }
-    } catch (error) {
-      console.error('Token verification failed:', error);
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      setShowLoginForm(true);
-    } finally {
-      setIsInitializing(false);
-    }
-  }, [router]);
-
   useEffect(() => {
   if (authLoading) return;
 
