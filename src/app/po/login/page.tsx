@@ -3,11 +3,13 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useAuth } from '@/hooks/useAuth'; // ← 追加
 
 const API_URL = process.env.NEXT_PUBLIC_API_ENDPOINT || '';
 
 const LoginPage = () => {
   const router = useRouter();
+  const { login } = useAuth(); // ← 追加
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -22,12 +24,12 @@ const LoginPage = () => {
     try {
       const response = await axios.get<{ valid: boolean }>(`${API_URL}/api/auth/verify`, {
         headers: {
-          Authorization: `Bearer ${token}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
       if (response.data.valid) {
-        router.push('/po/uoload');
+        router.push('/po/upload');
       } else {
         localStorage.removeItem('token');
       }
@@ -59,11 +61,8 @@ const LoginPage = () => {
       }>(`${API_URL}/api/auth/login`, { email, password });
 
       if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        if (response.data.user) {
-          localStorage.setItem('user', JSON.stringify(response.data.user));
-        }
-        router.push('/po/upload');
+        // ← ここを修正：useAuthのlogin関数を使用
+        login(response.data.token, response.data.user);
       } else {
         throw new Error('トークンが見つかりません');
       }
@@ -84,51 +83,62 @@ const LoginPage = () => {
 
   const handleDevLogin = () => {
     if (process.env.NODE_ENV === 'development') {
-      localStorage.setItem('token', 'dummy-dev-token');
-      localStorage.setItem('user', JSON.stringify({
+      // ← ここを修正：useAuthのlogin関数を使用
+      login('dummy-dev-token', {
         id: 1,
         name: 'テストユーザー',
         email: 'test@example.com',
         role: 'admin',
-      }));
-      router.push('/po/upload');
+      });
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center mb-6">DigiTradeX</h1>
+    <div className="min-h-screen flex items-center justify-center bg-gray-200">
+      <div className="bg-white p-8 rounded-lg shadow-sm w-full max-w-sm">
+        <h1 className="text-xl font-bold text-center mb-8 text-black">DigiTradeX</h1>
 
         {errorMessage && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded text-sm mb-4">
             {errorMessage}
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2">メールアドレス</label>
+            <label htmlFor="email" className="block text-gray-700 mb-2 text-sm">
+              メールアドレス
+            </label>
             <input
+              id="email"
               type="email"
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="example@company.com"
+              required
+              autoComplete="email"
             />
           </div>
+          
           <div className="mb-6">
-            <label className="block text-gray-700 mb-2">パスワード</label>
+            <label htmlFor="password" className="block text-gray-700 mb-2 text-sm">
+              パスワード
+            </label>
             <input
+              id="password"
               type="password"
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
             />
           </div>
+          
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 disabled:bg-blue-300"
+            className="w-full bg-blue-600 text-white py-2.5 rounded text-sm font-medium hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed"
             disabled={isLoading}
           >
             {isLoading ? 'ログイン中...' : 'ログイン'}
@@ -139,7 +149,7 @@ const LoginPage = () => {
           <div className="mt-4">
             <button
               onClick={handleDevLogin}
-              className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition-colors"
+              className="w-full bg-green-600 text-white py-2.5 rounded text-sm font-medium hover:bg-green-700 transition-colors"
             >
               開発用自動ログイン
             </button>

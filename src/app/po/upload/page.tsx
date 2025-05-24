@@ -4,10 +4,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import '@/app/po/upload/poupload.css';
+import ProtectedPage from '../../../components/ProtectedPage'; // 追加
 
 const API_URL = process.env.NEXT_PUBLIC_API_ENDPOINT || '';
 
-const POUploadPage = () => {
+const POUploadPageContent = () => {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -601,6 +602,14 @@ const POUploadPage = () => {
         </div>
       )}
     </div>
+  );
+};
+
+const POUploadPage = () => {
+  return (
+    <ProtectedPage>
+      <POUploadPageContent />
+    </ProtectedPage>
   );
 };
 
