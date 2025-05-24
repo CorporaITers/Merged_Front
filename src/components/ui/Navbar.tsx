@@ -13,6 +13,12 @@ const Navbar = () => {
   const [isDevLogin, setIsDevLogin] = useState(false);
   const isDevelopment = process.env.NODE_ENV === 'development';
 
+  // ✅ ナビゲーションバーを表示しないパス
+  const hideOnPaths = ['/', '/po/login'];
+  if (hideOnPaths.includes(pathname)) {
+    return null;
+  }
+
   // パスに基づいてアクティブなリンクを判断する関数
   const isActive = (path: string) => {
     return pathname === path || pathname.startsWith(path + '/');

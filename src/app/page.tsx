@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
+import { useAuth } from '@/hooks/useAuth'; // ← 追加
 
 const API_URL = process.env.NEXT_PUBLIC_API_ENDPOINT || '';
 
@@ -22,14 +23,8 @@ interface VerifyResponse {
   valid: boolean;
 }
 
-// 認証チェック関数
-const isAuthenticated = (): boolean => {
-  if (typeof window === 'undefined') return false;
-  const token = localStorage.getItem('token');
-  return !!token;
-};
-
-const HomePage = () => {
+const LoginPage = () => {
+  const { isAuthenticated, isLoading: authLoading, login } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -66,19 +61,15 @@ const HomePage = () => {
   }, [router]);
 
   useEffect(() => {
-    // サーバーサイドレンダリング時のlocalStorageアクセスを防ぐ
-    if (typeof window === 'undefined') return;
-    
-    const token = localStorage.getItem('token');
-    if (token) {
-      // トークンがある場合は検証
-      verifyToken(token);
-    } else {
-      // トークンがない場合はログインフォーム表示
-      setShowLoginForm(true);
-      setIsInitializing(false);
-    }
-  }, [verifyToken]);
+  if (authLoading) return;
+
+  if (isAuthenticated) {
+    router.push('/po/upload');
+  } else {
+    setShowLoginForm(true);
+    setIsInitializing(false);
+  }
+}, [isAuthenticated, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,15 +104,11 @@ const HomePage = () => {
       );
 
       if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        if (response.data.user) {
-          localStorage.setItem('user', JSON.stringify(response.data.user));
-        }
-        router.push('/po/upload');
+        login(response.data.token, response.data.user);
       } else {
         throw new Error('トークンが見つかりません');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Login error:', error);
       
       if (axios.isAxiosError(error)) {
@@ -137,7 +124,11 @@ const HomePage = () => {
           setErrorMessage('ログイン処理中にエラーが発生しました');
         }
       } else {
-        setErrorMessage(error.message || 'ログイン処理中にエラーが発生しました');
+        if (error instanceof Error) {
+          setErrorMessage(error.message || 'ログイン処理中にエラーが発生しました');
+        } else {
+          setErrorMessage('不明なエラーが発生しました');
+        }
       }
     } finally {
       setIsLoading(false);
@@ -254,4 +245,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
+export default LoginPage;
