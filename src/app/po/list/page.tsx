@@ -119,6 +119,43 @@ const POListPageContent = () => {
   const [expandedProductsList, setExpandedProductsList] = useState<ExpandedPO[]>([]);
   const [originalData, setOriginalData] = useState<POData[]>([]);
 
+  const fetchProductDetails = async (poId: number, token: string): Promise<ProductDetail[]> => {
+    try {
+      const response = await axios.get<{ success: boolean; products: ProductDetail[] }>(`${API_URL}/api/po/${poId}/products`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+        },
+      });
+  
+      if (response.data && response.data.success && Array.isArray(response.data.products)) {
+        return response.data.products;
+      }
+  
+      console.warn('製品詳細APIが未実装のため、モックデータを使用します');
+  
+      if (originalData && originalData.length > 0) {
+        const po = originalData.find(p => p.id === poId);
+        if (po && po.productName) {
+          const productNames = po.productName.split(', ');
+          return productNames.map((name, index) => ({
+            id: index + 1,
+            po_id: poId,
+            product_name: name,
+            quantity: po.quantity ? po.quantity / productNames.length : 0,
+            unit_price: po.unitPrice || 0,
+            subtotal: po.amount ? po.amount / productNames.length : 0
+          }));
+        }
+      }
+  
+      return [];
+    } catch (error) {
+      console.error('製品詳細取得エラー:', error);
+      return [];
+    }
+  };
+
   const fetchPOList = useCallback(async (): Promise<void> => {
     try {
       setIsLoading(true);
@@ -214,7 +251,7 @@ const POListPageContent = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [fetchProductDetails]);
 
   
 
@@ -243,42 +280,7 @@ const POListPageContent = () => {
     
   }
   
-  const fetchProductDetails = async (poId: number, token: string): Promise<ProductDetail[]> => {
-    try {
-      const response = await axios.get<{ success: boolean; products: ProductDetail[] }>(`${API_URL}/api/po/${poId}/products`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/json',
-        },
-      });
   
-      if (response.data && response.data.success && Array.isArray(response.data.products)) {
-        return response.data.products;
-      }
-  
-      console.warn('製品詳細APIが未実装のため、モックデータを使用します');
-  
-      if (originalData && originalData.length > 0) {
-        const po = originalData.find(p => p.id === poId);
-        if (po && po.productName) {
-          const productNames = po.productName.split(', ');
-          return productNames.map((name, index) => ({
-            id: index + 1,
-            po_id: poId,
-            product_name: name,
-            quantity: po.quantity ? po.quantity / productNames.length : 0,
-            unit_price: po.unitPrice || 0,
-            subtotal: po.amount ? po.amount / productNames.length : 0
-          }));
-        }
-      }
-  
-      return [];
-    } catch (error) {
-      console.error('製品詳細取得エラー:', error);
-      return [];
-    }
-  };
 
   interface FilterState {
   status: string;
@@ -707,7 +709,7 @@ const MemoComponent = ({
       }
   
       const idsToDelete = Object.entries(selectedItems)
-        .filter(([_, isSelected]) => isSelected)
+        .filter(([, isSelected]) => isSelected)
         .map(([id]) => parseInt(id));
   
       console.log('削除するPO:', idsToDelete);
