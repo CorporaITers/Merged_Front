@@ -28,7 +28,6 @@ export default function Home() {
   const [etd, setEtd] = useState("");
   const [eta, setEta] = useState("");
   const [availableDestinations, setAvailableDestinations] = useState<string[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [results, setResults] = useState<ScheduleResult[]>([]);
   const [error, setError] = useState("");
   const [feedbackSentMap, setFeedbackSentMap] = useState<Record<string, boolean>>({});

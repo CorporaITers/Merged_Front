@@ -15,7 +15,7 @@ export function useAuth() {
     setIsLoading(false);
   }, []);
 
-  const login = (token: string, user?: any) => {
+  const login = (token: string, user?: unknown) => {
     localStorage.setItem('token', token);
     if (user) {
       localStorage.setItem('user', JSON.stringify(user));
