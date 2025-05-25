@@ -24,6 +24,9 @@ interface LoginResponse {
 // }
 
 const LoginPage = () => {
+  if (typeof window === 'undefined') {
+    return null; // SSR時は何も表示しない（クラッシュ防止）
+  }  
   const { isAuthenticated, isLoading: authLoading, login } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -34,16 +37,16 @@ const LoginPage = () => {
   const [showLoginForm, setShowLoginForm] = useState(false);
 
   useEffect(() => {
-  if (authLoading) return;
+    if (authLoading) return;
 
-  setIsInitializing(false); // ← どちらでも一旦初期化解除
+    setIsInitializing(false); // ← どちらでも一旦初期化解除
 
-  if (isAuthenticated) {
-    router.push('/po/upload');
-  } else {
-    setShowLoginForm(true);
-  }
-}, [isAuthenticated, authLoading, router]);
+    if (isAuthenticated) {
+      router.push('/po/upload');
+    } else {
+      setShowLoginForm(true);
+    }
+  }, [isAuthenticated, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
