@@ -52,5 +52,5 @@ export function middleware(request: NextRequest) {
 
 // 特定のパスにのみミドルウェアを適用する設定
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/po/:path*', '/'], // matcher の対象を明確にする
 };
