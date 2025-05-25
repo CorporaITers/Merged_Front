@@ -36,11 +36,12 @@ const LoginPage = () => {
   useEffect(() => {
   if (authLoading) return;
 
+  setIsInitializing(false); // ← どちらでも一旦初期化解除
+
   if (isAuthenticated) {
     router.push('/po/upload');
   } else {
     setShowLoginForm(true);
-    setIsInitializing(false);
   }
 }, [isAuthenticated, authLoading, router]);
 
