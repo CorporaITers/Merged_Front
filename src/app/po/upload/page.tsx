@@ -4,12 +4,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import '@/app/po/upload/poupload.css';
-import ProtectedPage from '../../../components/ProtectedPage'; // 追加
+// import ProtectedPage from '../../../components/ProtectedPage'; // 追加
 import Image from 'next/image'
 
 const API_URL = process.env.NEXT_PUBLIC_API_ENDPOINT || '';
 
-const POUploadPageContent = () => {
+const POUploadPage = () => {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -655,12 +655,12 @@ const POUploadPageContent = () => {
   );
 };
 
-const POUploadPage = () => {
-  return (
-    <ProtectedPage>
-      <POUploadPageContent />
-    </ProtectedPage>
-  );
-};
+// const POUploadPage = () => {
+//   return (
+//     <ProtectedPage>
+//       <POUploadPageContent />
+//     </ProtectedPage>
+//   );
+// };
 
 export default POUploadPage;
