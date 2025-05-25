@@ -24,9 +24,6 @@ interface LoginResponse {
 // }
 
 const LoginPage = () => {
-  if (typeof window === 'undefined') {
-    return null; // SSR時は何も表示しない（クラッシュ防止）
-  }  
   const { isAuthenticated, isLoading: authLoading, login } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState('');
