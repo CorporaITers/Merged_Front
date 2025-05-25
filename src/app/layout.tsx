@@ -5,7 +5,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 // import { usePathname } from 'next/navigation';
 import "./globals.css";
 // 1. ナビゲーションバーとフッターのインポート追加
-import Navbar from '@/components/ui/NavbarWrapper'; // ← wrapper経由に変更
+import NavbarWrapper from '@/components/ui/NavbarWrapper';
 import Footer from "@/components/ui/Footer";
 
 const geistSans = Geist({
@@ -39,7 +39,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {/* 4. navbarコンポーネントを追加 */}
-        <Navbar /> {/* ← 中で表示制御 */}
+        <NavbarWrapper /> {/* ← 中で表示制御 */}
         {/* 5. childrenをmainタグで囲み、フッター用の下部余白を追加 */}
         <main className="pb-16">{children}</main>
         {/* 6. Footerコンポーネントを追加 */}
