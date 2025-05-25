@@ -8,16 +8,19 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
+  const isBrowser = typeof window !== 'undefined'; // ← ここで一度定義
+
   useEffect(() => {
-    if (typeof window === 'undefined') return; // ← SSR 対策
+    if (!isBrowser) return;
 
     const token = localStorage.getItem('token');
     setIsAuthenticated(!!token);
     setIsLoading(false);
-  }, []);
-
+  }, [isBrowser]);
 
   const login = (token: string, user?: unknown) => {
+    if (!isBrowser) return;
+
     localStorage.setItem('token', token);
     if (user) {
       localStorage.setItem('user', JSON.stringify(user));
@@ -27,6 +30,8 @@ export function useAuth() {
   };
 
   const logout = () => {
+    if (!isBrowser) return;
+
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setIsAuthenticated(false);
