@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 // import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import ProtectedPage from '../../../components/ProtectedPage'; // この行を追加
+// import ProtectedPage from '../../../components/ProtectedPage'; // この行を追加
 
 const API_URL = process.env.NEXT_PUBLIC_API_ENDPOINT || '';
 
@@ -70,7 +70,7 @@ interface ExpandedPO extends PO {
 //   products: Product[];
 // }
 
-const POListPageContent = () => {
+const POListPage = () => {
   // const router = useRouter();
   const [poList, setPOList] = useState<PO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -1195,12 +1195,12 @@ const MemoComponent = ({
   );
 };
 
-const POListPage = () => {
-  return (
-    <ProtectedPage>
-      <POListPageContent />
-    </ProtectedPage>
-  );
-};
+// const POListPage = () => {
+//   return (
+//     <ProtectedPage>
+//       <POListPageContent />
+//     </ProtectedPage>
+//   );
+// };
 
 export default POListPage;
