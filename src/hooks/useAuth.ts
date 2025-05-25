@@ -9,11 +9,13 @@ export function useAuth() {
   const router = useRouter();
 
   useEffect(() => {
-    // 認証状態をチェック
+    if (typeof window === 'undefined') return; // ← SSR 対策
+
     const token = localStorage.getItem('token');
     setIsAuthenticated(!!token);
     setIsLoading(false);
   }, []);
+
 
   const login = (token: string, user?: unknown) => {
     localStorage.setItem('token', token);
