@@ -5,7 +5,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 // import { usePathname } from 'next/navigation';
 import "./globals.css";
 // 1. ナビゲーションバーとフッターのインポート追加
-import Navbar from "@/components/ui/Navbar";
+import Navbar from '@/components/ui/NavbarWrapper'; // ← wrapper経由に変更
 import Footer from "@/components/ui/Footer";
 
 const geistSans = Geist({
