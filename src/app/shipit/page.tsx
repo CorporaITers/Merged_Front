@@ -2,7 +2,6 @@
 
 import React from "react";
 import { useEffect, useState } from "react";
-import Script from 'next/script';
 
 type ScheduleResult = {
   company: string;
