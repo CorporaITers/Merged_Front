@@ -5,23 +5,28 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const Navbar = () => {
-  const pathname = usePathname(); // ✅ Hookは絶対に条件の外
+  const pathname = usePathname();
   const [showDevMenu, setShowDevMenu] = useState(false);
   const [isDevLogin, setIsDevLogin] = useState(false);
 
-  const isDevelopment = process.env.NODE_ENV === 'development';
+  // 開発環境判定を修正（processエラー対策）
+  const isDevelopment = typeof window !== 'undefined' && 
+                       (window.location.hostname === 'localhost' || 
+                        window.location.hostname === '127.0.0.1' ||
+                        window.location.port === '3000');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      // 初回実行
       checkDevLoginStatus();
 
+      // storageイベントのリスナー（他のタブでの変更を検知）
       const handleStorageChange = () => checkDevLoginStatus();
       window.addEventListener('storage', handleStorageChange);
-      const interval = setInterval(checkDevLoginStatus, 2000);
 
+      // クリーンアップ（intervalは削除）
       return () => {
         window.removeEventListener('storage', handleStorageChange);
-        clearInterval(interval);
       };
     }
   }, []);
@@ -29,14 +34,21 @@ const Navbar = () => {
   const checkDevLoginStatus = () => {
     const userStr = localStorage.getItem('user');
     const token = localStorage.getItem('token');
+    
     if (userStr && token) {
       try {
         const user = JSON.parse(userStr);
-        setIsDevLogin(
-          token === 'dummy-dev-token' ||
-          (user.email && user.email === 'test@example.com')
-        );
-      } catch {
+        
+        // 開発環境のユーザー判定
+        const devLoginResult = 
+          token === 'dummy-dev-token' || // 開発用自動ログイン
+          (user.email && (
+            user.email === 'dev@example.com' || // バックエンドの開発ユーザー
+            user.email === 'test@example.com'   // フロントエンドの開発用自動ログイン
+          ));
+        
+        setIsDevLogin(devLoginResult);
+      } catch (error) {
         setIsDevLogin(false);
       }
     } else {
@@ -51,10 +63,9 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    location.href = '/po/login'; // 強制遷移で再描画
+    location.href = '/po/login';
   };
 
-  // ✅ フックの後に return null を書く
   const hideOnPaths = ['/', '/po/login'];
   if (hideOnPaths.includes(pathname)) {
     return null;
@@ -110,9 +121,13 @@ const Navbar = () => {
 
             {showDevMenu && (
               <div className="absolute top-[60px] right-0 bg-white text-gray-800 shadow-lg rounded-b-md w-48 z-50">
-                <button onClick={handleLogout} className="block w-full text-left px-4 py-2 hover:bg-gray-100">
+                <Link 
+                  href="/dev/logout"
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  onClick={() => setShowDevMenu(false)}
+                >
                   開発用ログアウト
-                </button>
+                </Link>
               </div>
             )}
           </div>
