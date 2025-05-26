@@ -5,7 +5,12 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '@/hooks/useAuth';
 
-const API_URL = process.env.NEXT_PUBLIC_API_ENDPOINT || 'https://tech0-gen8-step4-pos-app-30.azurewebsites.net';
+const API_URL = process.env.NEXT_PUBLIC_API_ENDPOINT;
+
+// 環境変数チェック
+if (!API_URL) {
+  console.error('NEXT_PUBLIC_API_ENDPOINT環境変数が設定されていません');
+}
 
 interface User {
   id: number;
@@ -29,21 +34,6 @@ const LoginPage = () => {
   const [isInitializing, setIsInitializing] = useState(true);
   const [showLoginForm, setShowLoginForm] = useState(false);
 
-  // デバッグ情報を追加
-  useEffect(() => {
-    // 環境変数デバッグ情報を表示
-    console.log('=== API接続デバッグ情報 ===');
-    console.log('NODE_ENV:', process.env.NODE_ENV);
-    console.log('NEXT_PUBLIC_API_ENDPOINT:', process.env.NEXT_PUBLIC_API_ENDPOINT);
-    console.log('API_URL:', API_URL);
-    if (typeof window !== 'undefined') {
-      console.log('Current URL:', window.location.href);
-      console.log('Current host:', window.location.host);
-      console.log('Protocol:', window.location.protocol);
-    }
-    console.log('========================');
-  }, []);
-
   useEffect(() => {
     if (authLoading) return;
 
@@ -60,6 +50,13 @@ const LoginPage = () => {
     e.preventDefault();
     setErrorMessage('');
     setIsLoading(true);
+
+    // API URL チェック
+    if (!API_URL) {
+      setErrorMessage('システム設定エラー: API接続先が設定されていません');
+      setIsLoading(false);
+      return;
+    }
 
     const trimmedEmail = email.trim();
     const trimmedPassword = password.trim();
@@ -78,27 +75,19 @@ const LoginPage = () => {
     }
 
     try {
-      const loginUrl = `${API_URL}/api/auth/login`;
-      console.log('=== ログイン試行 ===');
-      console.log('Login URL:', loginUrl);
-      console.log('Email:', trimmedEmail);
-      console.log('API_URL variable:', API_URL);
-      
       const response = await axios.post<LoginResponse>(
-        loginUrl,
+        `${API_URL}/api/auth/login`,
         { 
           email: trimmedEmail, 
           password: trimmedPassword 
         },
         {
-          timeout: 30000, // 30秒タイムアウト
+          timeout: 30000,
           headers: {
             'Content-Type': 'application/json'
           }
         }
       );
-
-      console.log('Login response:', response.status, response.data);
 
       if (response.data.token) {
         const userInfo = response.data.user || {
@@ -113,21 +102,7 @@ const LoginPage = () => {
         throw new Error('トークンが見つかりません');
       }
     } catch (error) {
-      console.error('=== ログインエラー詳細 ===');
-      console.error('Error type:', typeof error);
-      console.error('Error object:', error);
-      
       if (axios.isAxiosError(error)) {
-        console.error('Axios error details:');
-        console.error('- Status:', error.response?.status);
-        console.error('- Status text:', error.response?.statusText);
-        console.error('- Response data:', error.response?.data);
-        console.error('- Request URL:', error.config?.url);
-        console.error('- Request method:', error.config?.method);
-        console.error('- Request headers:', error.config?.headers);
-        console.error('- Network error:', !error.response);
-        console.error('- Timeout:', error.code === 'ECONNABORTED');
-        
         if (error.response?.status === 401) {
           setErrorMessage('メールアドレスまたはパスワードが正しくありません');
         } else if (error.response?.status === 429) {
@@ -137,12 +112,11 @@ const LoginPage = () => {
         } else if (error.code === 'ECONNABORTED') {
           setErrorMessage('接続がタイムアウトしました。しばらく時間をおいて再度お試しください');
         } else if (!error.response) {
-          setErrorMessage(`サーバーに接続できません。API URL: ${API_URL}`);
+          setErrorMessage('サーバーに接続できません。ネットワーク接続を確認してください');
         } else {
           setErrorMessage('ログイン処理中にエラーが発生しました');
         }
       } else {
-        console.error('Non-axios error:', error);
         if (error instanceof Error) {
           setErrorMessage(error.message || 'ログイン処理中にエラーが発生しました');
         } else {
@@ -151,32 +125,6 @@ const LoginPage = () => {
       }
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  // API接続テスト関数
-  const testApiConnection = async () => {
-    if (!API_URL) {
-      console.error('API_URL が設定されていません');
-      return;
-    }
-
-    try {
-      console.log('=== API接続テスト ===');
-      const testUrl = `${API_URL}/api/test/connection`;
-      console.log('Test URL:', testUrl);
-      
-      const response = await fetch(testUrl);
-      console.log('Test response status:', response.status);
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Test response data:', data);
-      } else {
-        console.error('Test failed:', response.statusText);
-      }
-    } catch (error) {
-      console.error('Test error:', error);
     }
   };
 
@@ -212,20 +160,6 @@ const LoginPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-200">
       <div className="bg-white p-8 rounded-lg shadow-sm w-full max-w-sm">
         <h1 className="text-xl font-bold text-center mb-8 text-black">DigiTradeX</h1>
-
-        {/* デバッグ情報表示（一時的） */}
-        <div className="mb-4 p-3 bg-gray-100 border rounded text-xs">
-          <div><strong>Debug Info:</strong></div>
-          <div>API URL: {API_URL || 'undefined'}</div>
-          <div>Environment: {process.env.NODE_ENV}</div>
-          <div>Host: {typeof window !== 'undefined' ? window.location.host : 'unknown'}</div>
-          <button 
-            onClick={testApiConnection}
-            className="mt-2 px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
-          >
-            API接続テスト
-          </button>
-        </div>
 
         {errorMessage && (
           <div className="bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded text-sm mb-4">
