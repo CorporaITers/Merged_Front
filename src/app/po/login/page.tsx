@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '@/hooks/useAuth';
 
-const API_URL = process.env.NEXT_PUBLIC_API_ENDPOINT || '';
+const API_URL = process.env.NEXT_PUBLIC_API_ENDPOINT || 'https://tech0-gen8-step4-pos-app-30.azurewebsites.net';
 
 interface User {
   id: number;
