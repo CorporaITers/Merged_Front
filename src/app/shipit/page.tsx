@@ -34,6 +34,7 @@ export default function Home() {
   const [showRawMap, setShowRawMap] = useState<Record<string, boolean>>({});
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showDifyChat, setShowDifyChat] = useState(false);
 
   // 船会社のログインURLマッピング
   const MOCK_COMPANY_LOGIN_URLS: Record<string, string> = {
@@ -182,11 +183,11 @@ export default function Home() {
     if (e.target.value) setEtd("");
   };
 
-    const handleEtdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEtdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEtd(e.target.value);
     if (e.target.value) setEta("");
   };
-
+  
   return (
     <>
       {/* メイン */}
@@ -413,49 +414,57 @@ export default function Home() {
         </div>
   </div> 
 
-  <Script
-    id="dify-config"
-    strategy="afterInteractive"
-    dangerouslySetInnerHTML={{
-      __html: `
-        window.difyChatbotConfig = {
-          token: 'o5eR4Ibgrs8MWzXD'
-        };
-      `,
-    }}
-  />
-  <Script
-    src="https://udify.app/embed.min.js"
-    id="o5eR4Ibgrs8MWzXD"
-    defer
-  />
-  <style jsx global>{`
-    #dify-chatbot-bubble-button {
-      background-color: transparent !important;
-      background-image: url('/dorimochan.png') !important;
-      background-size: cover !important;
-      background-position: center !important;
-      background-repeat: no-repeat !important;
-      border-radius: 50% !important;
-      width: 120px !important;
-      height: 100px !important;
-      bottom: 40px !important;
-      right: 30px !important;
-    }
 
-    #dify-chatbot-bubble-button * {
-      display: none !important;
-    }
+{/* CSP回避 直接Difyチャットボット実装 - ヘッダーなし */}
+      <div className="fixed bottom-10 right-8 z-50">
+        {/* どりもちゃんボタン - 通知バッジなし */}
+        <button
+          onClick={() => setShowDifyChat(!showDifyChat)}
+          className="relative w-30 h-25 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+          style={{
+            backgroundImage: "url('/dorimochan.png')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            width: '80px',
+            height: '60px'
+          }}
+          title="どりもちゃんに相談する"
+        >
+        </button>
+        
+{/* Difyチャットウィンドウ - 超シンプル版 */}
+        {showDifyChat && (
+          <div className="absolute bottom-20 right-0 w-96 h-[600px] bg-white rounded-lg shadow-2xl border animate-fade-in overflow-hidden">
+            {/* Dify iframe - 完全フルサイズ */}
+            <iframe
+              src="https://udify.app/chatbot/o5eR4Ibgrs8MWzXD"
+              className="w-full h-full border-none rounded-lg"
+              title="どりもちゃんチャットボット"
+              allow="microphone; camera"
+              onLoad={() => console.log('✅ Dify iframe loaded successfully')}
+              onError={() => console.error('❌ Dify iframe failed to load')}
+            />
+          </div>
+        )}
+      </div>
 
-
-    #dify-chatbot-bubble-window {
-      width: 24rem !important;
-      height: 40rem !important;
-      bottom: 70px !important;
-      right: 30px !important;
-    }
-  `}</style>
-
+      {/* アニメーション用CSS */}
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(10px) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        
+        .animate-fade-in {
+          animation: fade-in 0.3s ease-out;
+        }
+      `}</style>
   </>
   );
 }

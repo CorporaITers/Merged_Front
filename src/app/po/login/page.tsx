@@ -78,7 +78,15 @@ const LoginPage = () => {
       );
 
       if (response.data.token) {
-        login(response.data.token, response.data.user);
+        // ユーザー情報が返されない場合は、入力情報から作成
+        const userInfo = response.data.user || {
+          id: 1,
+          name: trimmedEmail.split('@')[0], // メールアドレスの@前を名前として使用
+          email: trimmedEmail,
+          role: 'user'
+        };
+
+        login(response.data.token, userInfo);
       } else {
         throw new Error('トークンが見つかりません');
       }
@@ -203,7 +211,7 @@ const LoginPage = () => {
           </button>
         </form>
 
-        {/* 開発用自動ログインボタンを追加 */}
+        {/* 開発用自動ログインボタンを追加
         {process.env.NODE_ENV === 'development' && (
           <div className="mt-4">
             <button
@@ -213,7 +221,7 @@ const LoginPage = () => {
               開発用自動ログイン
             </button>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );
