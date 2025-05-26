@@ -154,7 +154,7 @@ const POListPage = () => {
       console.error('製品詳細取得エラー:', error);
       return [];
     }
-  }, []);
+  }, [originalData]);
 
   const fetchPOList = useCallback(async (): Promise<void> => {
     try {

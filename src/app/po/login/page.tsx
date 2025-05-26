@@ -118,18 +118,18 @@ const LoginPage = () => {
   };
 
   // 開発用ログイン関数を追加
-  const handleDevLogin = () => {
-    if (process.env.NODE_ENV === 'development') {
-      localStorage.setItem('token', 'dummy-dev-token');
-      localStorage.setItem('user', JSON.stringify({
-        id: 1,
-        name: 'テストユーザー',
-        email: 'test@example.com',
-        role: 'admin',
-      }));
-      router.push('/po/upload');
-    }
-  };
+  // const handleDevLogin = () => {
+  //   if (process.env.NODE_ENV === 'development') {
+  //     localStorage.setItem('token', 'dummy-dev-token');
+  //     localStorage.setItem('user', JSON.stringify({
+  //       id: 1,
+  //       name: 'テストユーザー',
+  //       email: 'test@example.com',
+  //       role: 'admin',
+  //     }));
+  //     router.push('/po/upload');
+  //   }
+  // };
 
   // 認証中の表示
   if (isInitializing) {
