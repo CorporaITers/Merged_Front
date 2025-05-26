@@ -48,7 +48,7 @@ const Navbar = () => {
           ));
         
         setIsDevLogin(devLoginResult);
-      } catch (error) {
+      } catch {
         setIsDevLogin(false);
       }
     } else {
