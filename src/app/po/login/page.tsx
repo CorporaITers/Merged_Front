@@ -5,6 +5,28 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '@/hooks/useAuth';
 
+// ====== デバッグコード開始 ======
+console.log('🔍 環境変数デバッグ情報:');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('NEXT_PUBLIC_API_ENDPOINT:', process.env.NEXT_PUBLIC_API_ENDPOINT);
+console.log('全ての NEXT_PUBLIC_ 環境変数:', 
+  Object.keys(process.env)
+    .filter(key => key.startsWith('NEXT_PUBLIC_'))
+    .reduce((obj, key) => {
+      obj[key] = process.env[key];
+      return obj;
+    }, {} as Record<string, string | undefined>)
+);
+
+// ブラウザでの確認
+if (typeof window !== 'undefined') {
+  console.log('CLIENT SIDE - API_ENDPOINT:', process.env.NEXT_PUBLIC_API_ENDPOINT);
+  console.log('CLIENT SIDE - process.env:', process.env);
+} else {
+  console.log('SERVER SIDE - API_ENDPOINT:', process.env.NEXT_PUBLIC_API_ENDPOINT);
+}
+// ====== デバッグコード終了 ======
+
 const API_URL = process.env.NEXT_PUBLIC_API_ENDPOINT;
 
 // 環境変数チェック
@@ -166,6 +188,14 @@ const LoginPage = () => {
             {errorMessage}
           </div>
         )}
+
+        {/* デバッグ情報を画面に表示（一時的） */}
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-3 py-2 rounded text-xs mb-4">
+          <strong>デバッグ情報:</strong><br />
+          API_URL: {API_URL || '未設定'}<br />
+          NODE_ENV: {process.env.NODE_ENV}<br />
+          ブラウザ環境: {typeof window !== 'undefined' ? 'Yes' : 'No'}
+        </div>
 
         <form onSubmit={handleSubmit} noValidate>
           <div className="mb-4">
