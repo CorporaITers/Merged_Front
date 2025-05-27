@@ -9,11 +9,7 @@ const Navbar = () => {
   const [showDevMenu, setShowDevMenu] = useState(false);
   const [isDevLogin, setIsDevLogin] = useState(false);
 
-  // 開発環境判定を修正（processエラー対策）
-  const isDevelopment = typeof window !== 'undefined' && 
-                       (window.location.hostname === 'localhost' || 
-                        window.location.hostname === '127.0.0.1' ||
-                        window.location.port === '3000');
+  const isDevelopment = process.env.NODE_ENV === 'development';
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -40,14 +36,10 @@ const Navbar = () => {
         const user = JSON.parse(userStr);
         
         // 開発環境のユーザー判定
-        const devLoginResult = 
+        setIsDevLogin(
           token === 'dummy-dev-token' || // 開発用自動ログイン
-          (user.email && (
-            user.email === 'dev@example.com' || // バックエンドの開発ユーザー
-            user.email === 'test@example.com'   // フロントエンドの開発用自動ログイン
-          ));
-        
-        setIsDevLogin(devLoginResult);
+          (user.email && user.email === 'dev@example.com') // バックエンドの開発ユーザー
+        );
       } catch {
         setIsDevLogin(false);
       }
