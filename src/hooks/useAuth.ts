@@ -8,7 +8,7 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  const isBrowser = typeof window !== 'undefined'; // ← ここで一度定義
+  const isBrowser = typeof window !== 'undefined';
 
   useEffect(() => {
     if (!isBrowser) return;
@@ -25,7 +25,12 @@ export function useAuth() {
     if (user) {
       localStorage.setItem('user', JSON.stringify(user));
     }
+    
     setIsAuthenticated(true);
+    
+    // カスタムイベントを発火してNavbarに変更を通知
+    window.dispatchEvent(new Event('localStorageChange'));
+    
     router.push('/po/upload');
   };
 
@@ -35,6 +40,10 @@ export function useAuth() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setIsAuthenticated(false);
+    
+    // カスタムイベントを発火
+    window.dispatchEvent(new Event('localStorageChange'));
+    
     router.push('/po/login');
   };
 

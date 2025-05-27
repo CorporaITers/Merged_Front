@@ -34,6 +34,21 @@ const LoginPage = () => {
   const [isInitializing, setIsInitializing] = useState(true);
   const [showLoginForm, setShowLoginForm] = useState(false);
 
+  // 開発用：直接ログイン機能
+  const handleDevLogin = () => {
+    const devUser = {
+      id: 1,
+      name: 'dev',
+      email: 'dev@example.com',
+      role: 'admin'
+    };
+    const devToken = 'dummy-dev-token';
+    
+    localStorage.setItem('token', devToken);
+    localStorage.setItem('user', JSON.stringify(devUser));
+    login(devToken, devUser);
+  };
+
   useEffect(() => {
     if (authLoading) return;
 
@@ -51,15 +66,22 @@ const LoginPage = () => {
     setErrorMessage('');
     setIsLoading(true);
 
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+
+    // 開発用：dev@example.comの場合は直接ログイン
+    if (process.env.NODE_ENV === 'development' && trimmedEmail === 'dev@example.com') {
+      setIsLoading(false);
+      handleDevLogin();
+      return;
+    }
+
     // API URL チェック
     if (!API_URL) {
       setErrorMessage('システム設定エラー: API接続先が設定されていません');
       setIsLoading(false);
       return;
     }
-
-    const trimmedEmail = email.trim();
-    const trimmedPassword = password.trim();
 
     if (!trimmedEmail || !trimmedPassword) {
       setErrorMessage('メールアドレスとパスワードを入力してください');
@@ -207,6 +229,8 @@ const LoginPage = () => {
             {isLoading ? 'ログイン中...' : 'ログイン'}
           </button>
         </form>
+
+
       </div>
     </div>
   );

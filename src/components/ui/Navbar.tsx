@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -11,23 +11,7 @@ const Navbar = () => {
 
   const isDevelopment = process.env.NODE_ENV === 'development';
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // 初回実行
-      checkDevLoginStatus();
-
-      // storageイベントのリスナー（他のタブでの変更を検知）
-      const handleStorageChange = () => checkDevLoginStatus();
-      window.addEventListener('storage', handleStorageChange);
-
-      // クリーンアップ（intervalは削除）
-      return () => {
-        window.removeEventListener('storage', handleStorageChange);
-      };
-    }
-  }, []);
-
-  const checkDevLoginStatus = () => {
+  const checkDevLoginStatus = useCallback(() => {
     const userStr = localStorage.getItem('user');
     const token = localStorage.getItem('token');
     
@@ -36,17 +20,53 @@ const Navbar = () => {
         const user = JSON.parse(userStr);
         
         // 開発環境のユーザー判定
-        setIsDevLogin(
-          token === 'dummy-dev-token' || // 開発用自動ログイン
-          (user.email && user.email === 'dev@example.com') // バックエンドの開発ユーザー
-        );
-      } catch {
+        const isDevToken = token === 'dummy-dev-token';
+        const isDevEmail = user.email && user.email === 'dev@example.com';
+        
+        const shouldShowDevMenu = isDevToken || isDevEmail;
+        setIsDevLogin(shouldShowDevMenu);
+        return shouldShowDevMenu;
+      } catch (error) {
         setIsDevLogin(false);
+        return false;
       }
     } else {
       setIsDevLogin(false);
+      return false;
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // 初回チェック
+      checkDevLoginStatus();
+
+      // storage変更の監視
+      const handleStorageChange = (e: StorageEvent) => {
+        if (e.key === 'user' || e.key === 'token') {
+          checkDevLoginStatus();
+        }
+      };
+
+      // カスタムイベントの監視（同一タブ内での変更）
+      const handleCustomStorageChange = () => {
+        checkDevLoginStatus();
+      };
+
+      window.addEventListener('storage', handleStorageChange);
+      window.addEventListener('localStorageChange', handleCustomStorageChange);
+
+      return () => {
+        window.removeEventListener('storage', handleStorageChange);
+        window.removeEventListener('localStorageChange', handleCustomStorageChange);
+      };
+    }
+  }, [checkDevLoginStatus]);
+
+  // パス変更時もチェック
+  useEffect(() => {
+    checkDevLoginStatus();
+  }, [pathname, checkDevLoginStatus]);
 
   const isActive = (path: string) => {
     return pathname === path || pathname.startsWith(path + '/');
@@ -55,6 +75,10 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    
+    // カスタムイベントを発火
+    window.dispatchEvent(new Event('localStorageChange'));
+    
     location.href = '/po/login';
   };
 
