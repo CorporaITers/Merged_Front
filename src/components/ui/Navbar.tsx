@@ -27,6 +27,7 @@ const Navbar = () => {
         setIsDevLogin(shouldShowDevMenu);
         return shouldShowDevMenu;
       } catch (error) {
+        console.error('Failed to parse user data:', error);
         setIsDevLogin(false);
         return false;
       }
