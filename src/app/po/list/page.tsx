@@ -116,6 +116,7 @@ const POListPage = () => {
     [key: string]: unknown;
   }
   
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const [expandedProductsList, setExpandedProductsList] = useState<ExpandedPO[]>([]);
   const [originalData, setOriginalData] = useState<POData[]>([]);
 

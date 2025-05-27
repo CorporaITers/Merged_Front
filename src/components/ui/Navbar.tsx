@@ -26,7 +26,7 @@ const Navbar = () => {
         const shouldShowDevMenu = isDevToken || isDevEmail;
         setIsDevLogin(shouldShowDevMenu);
         return shouldShowDevMenu;
-      } catch (error) {
+      } catch (_error) {
         setIsDevLogin(false);
         return false;
       }
