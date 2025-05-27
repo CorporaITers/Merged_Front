@@ -65,7 +65,7 @@ export default function HomePage() {
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <h2 className="text-lg font-semibold text-gray-800 mb-2">主な機能</h2>
             <ul className="text-sm text-gray-600 space-y-1 text-left">
-              <li>• PO（購買発注書）の自動読取・登録</li>
+              <li>• PO（発注書）の自動読取・登録</li>
               <li>• 登録済みPOの管理・検索</li>
               <li>• 船便スケジュール検索</li>
               <li>• バンニング見込み予測</li>
