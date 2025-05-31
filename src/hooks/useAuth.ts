@@ -1,56 +1,162 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 
-export function useAuth() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
+interface User {
+  name: string;
+  email: string;
+  role: string;
+}
 
+interface AuthState {
+  user: User | null;
+  token: string | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  isDevLogin: boolean;
+}
+
+export function useAuth() {
+  const [authState, setAuthState] = useState<AuthState>({
+    user: null,
+    token: null,
+    isAuthenticated: false,
+    isLoading: true,
+    isDevLogin: false,
+  });
+  
+  const router = useRouter();
   const isBrowser = typeof window !== 'undefined';
 
+  const loadAuthData = useCallback(() => {
+    // サーバーサイドでは実行しない
+    if (!isBrowser) {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
+      return;
+    }
+
+    try {
+      const userStr = localStorage.getItem('user');
+      const token = localStorage.getItem('token');
+
+      if (userStr && token) {
+        const user = JSON.parse(userStr);
+        
+        // 開発者判定ロジック
+        const isDevToken = token === 'dummy-dev-token';
+        const isDevEmail = user.email === 'dev@example.com';
+        const isAdminRole = user.role === 'admin';
+        const isDevLogin = isDevToken || isDevEmail || isAdminRole;
+
+        setAuthState({
+          user,
+          token,
+          isAuthenticated: true,
+          isLoading: false,
+          isDevLogin,
+        });
+      } else {
+        setAuthState({
+          user: null,
+          token: null,
+          isAuthenticated: false,
+          isLoading: false,
+          isDevLogin: false,
+        });
+      }
+    } catch (error) {
+      console.error('Auth data parsing error:', error);
+      setAuthState({
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        isLoading: false,
+        isDevLogin: false,
+      });
+    }
+  }, [isBrowser]);
+
+  const login = useCallback((token: string, user?: User) => {
+    if (!isBrowser) return;
+
+    try {
+      localStorage.setItem('token', token);
+      if (user) {
+        localStorage.setItem('user', JSON.stringify(user));
+      }
+      
+      // カスタムイベントを発火してNavbarに変更を通知
+      window.dispatchEvent(new Event('localStorageChange'));
+      
+      // 状態を更新
+      loadAuthData();
+      
+      // ページ遷移
+      router.push('/po/upload');
+    } catch (error) {
+      console.error('Login error:', error);
+    }
+  }, [isBrowser, loadAuthData, router]);
+
+  const logout = useCallback(() => {
+    if (!isBrowser) return;
+
+    try {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      
+      // カスタムイベントを発火
+      window.dispatchEvent(new Event('localStorageChange'));
+      
+      // 状態をリセット
+      setAuthState({
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        isLoading: false,
+        isDevLogin: false,
+      });
+      
+      // ページ遷移
+      router.push('/po/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      router.push('/po/login');
+    }
+  }, [isBrowser, router]);
+
+  // 初期化とイベント監視
   useEffect(() => {
     if (!isBrowser) return;
 
-    const token = localStorage.getItem('token');
-    setIsAuthenticated(!!token);
-    setIsLoading(false);
-  }, [isBrowser]);
+    // 初回ロード
+    loadAuthData();
 
-  const login = (token: string, user?: unknown) => {
-    if (!isBrowser) return;
+    // ストレージ変更の監視
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'user' || e.key === 'token') {
+        loadAuthData();
+      }
+    };
 
-    localStorage.setItem('token', token);
-    if (user) {
-      localStorage.setItem('user', JSON.stringify(user));
-    }
-    
-    setIsAuthenticated(true);
-    
-    // カスタムイベントを発火してNavbarに変更を通知
-    window.dispatchEvent(new Event('localStorageChange'));
-    
-    router.push('/po/upload');
-  };
+    const handleCustomStorageChange = () => {
+      loadAuthData();
+    };
 
-  const logout = () => {
-    if (!isBrowser) return;
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('localStorageChange', handleCustomStorageChange);
 
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setIsAuthenticated(false);
-    
-    // カスタムイベントを発火
-    window.dispatchEvent(new Event('localStorageChange'));
-    
-    router.push('/po/login');
-  };
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('localStorageChange', handleCustomStorageChange);
+    };
+  }, [isBrowser, loadAuthData]);
 
   return {
-    isAuthenticated,
-    isLoading,
+    ...authState,
     login,
     logout,
+    refresh: loadAuthData,
   };
 }
