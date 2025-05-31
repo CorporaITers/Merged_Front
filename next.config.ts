@@ -18,10 +18,10 @@ const nextConfig: NextConfig = {
   },
 
   // Azure App Service最適化
-  experimental: {
-    // アプリディレクトリを使用している場合
-    appDir: true,
-  },
+  // experimental: {
+  //   // アプリディレクトリを使用している場合
+  //   appDir: true,
+  // },
 
   // 画像最適化設定
   images: {
