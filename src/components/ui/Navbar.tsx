@@ -171,13 +171,13 @@ const Navbar = () => {
                 >
                   開発用ログアウト
                 </Link>
-                <Link 
+                {/* <Link 
                   href="/admin/settings"
                   className="block w-full text-left px-4 py-2 hover:bg-gray-100"
                   onClick={() => setShowDevMenu(false)}
                 >
-                  管理者設定
-                </Link>
+                  管理者設定 */}
+                {/* </Link> */}
               </div>
             )}
           </div>
