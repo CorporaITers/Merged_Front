@@ -70,7 +70,7 @@ const LoginPage = () => {
     const trimmedPassword = password.trim();
 
     // 開発用：dev@example.comの場合は直接ログイン
-    if (process.env.NODE_ENV === 'production' && trimmedEmail === 'dev@example.com') {
+    if (process.env.NODE_ENV === 'development' && trimmedEmail === 'dev@example.com') {
       setIsLoading(false);
       handleDevLogin();
       return;
